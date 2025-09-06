@@ -1,47 +1,52 @@
 {
   "name": "mock-university",
   "version": "1.0.0",
-  "description": "A modern university website with responsive design",
+  "description": "MockUniversity - Premier online education platform with modern design and backend functionality",
   "main": "index.html",
   "scripts": {
     "start": "npx serve .",
-    "build": "echo 'No build step required for static site' && exit 0",
-    "dev": "npx serve . --single",
+    "build": "echo 'Static site - no build required' && exit 0",
+    "dev": "npx serve . --single --port 3000",
     "deploy": "netlify deploy --prod --dir .",
     "preview": "netlify deploy --dir .",
-    "lint": "echo 'No linting configured yet' && exit 0",
-    "test": "echo 'No tests configured yet' && exit 0"
+    "functions:dev": "netlify dev",
+    "verify": "node deploy.js",
+    "lint": "echo 'Linting not configured' && exit 0",
+    "test": "echo 'Tests not configured' && exit 0"
   },
   "keywords": [
     "university",
     "education",
-    "website",
-    "static",
+    "online-learning",
+    "netlify",
+    "serverless",
     "responsive",
-    "html",
-    "css",
-    "javascript"
+    "modern-design",
+    "student-portal",
+    "admissions"
   ],
-  "author": "Swetha Rajan",
+  "author": "MockUniversity Development Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/swetharajan7/MockUniversity.git"
   },
-  "homepage": "https://github.com/swetharajan7/MockUniversity#readme",
+  "homepage": "https://mockuniversity.netlify.app",
   "bugs": {
     "url": "https://github.com/swetharajan7/MockUniversity/issues"
   },
   "devDependencies": {
-    "serve": "^14.2.1"
+    "serve": "^14.2.1",
+    "netlify-cli": "^17.0.0"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
-    "not dead"
+    "not dead",
+    "not ie 11"
   ]
 }
