@@ -1,2 +1,9 @@
 [build.environment]
   NODE_VERSION = "20"
+[build]
+  publish = "/"
+  # no command for static sites
+
+# Optional: if you later move files into "public/"
+# [build]
+#   publish = "public"
