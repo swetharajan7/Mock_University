@@ -1,9 +1,11 @@
+[build]
+  # This is the directory that contains the files to be published
+  publish = "."
+  
 [build.environment]
   NODE_VERSION = "20"
-[build]
-  publish = "/"
-  # no command for static sites
 
-# Optional: if you later move files into "public/"
-# [build]
-#   publish = "public"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
