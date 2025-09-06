@@ -1,11 +1,55 @@
-[build]
-  # This is the directory that contains the files to be published
+ [build]
+  # The directory to publish (current directory)
   publish = "."
   
-[build.environment]
-  NODE_VERSION = "20"
+  # Build command (not needed for static sites, but we'll add a simple one)
+  command = "npm run build"
 
+[build.environment]
+  # Node.js version to use
+  NODE_VERSION = "18"
+  
+  # NPM version
+  NPM_VERSION = "9"
+
+# Handle client-side routing (for SPAs)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  
+# Set custom headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# Handle common file extensions
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Content-Type = "text/css"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
