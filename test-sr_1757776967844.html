@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Test sr_1757776967844 - CORS Fix</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .external-id {
+      background: #fff3cd;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .success:hover {
+      background: #45a049;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+    
+    .code-block {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 CORS Fix Test</h1>
+    
+    <div class="external-id">
+      Testing: <code>sr_1757776967844</code>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔧 Method 1: Direct API Test (Bypass CORS)</h3>
+      <p>This tests the API directly from the same domain (no CORS issues):</p>
+      <button onclick="testDirectAPI()">Test Direct API Call</button>
+      <div id="directResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🌐 Method 2: Cross-Origin Test (StellarRec Simulation)</h3>
+      <p>This simulates how StellarRec would call the API (tests CORS):</p>
+      <button onclick="testCrossOrigin()">Test Cross-Origin Call</button>
+      <div id="corsResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📱 Method 3: View Apply Page</h3>
+      <p>Open the apply page to see the real-time status:</p>
+      <button onclick="openApplyPage()" class="success">Open Apply Page</button>
+      <div id="applyResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔍 Console Test Code</h3>
+      <p>Run this in the browser console on the apply page:</p>
+      <div class="code-block">
+fetch('/api/save-reco', {
+  method: 'POST',
+  headers: {'content-type': 'application/json'},
+  body: JSON.stringify({
+    external_id: 'sr_1757776967844',
+    recommender_name: 'Prof. Manas Mohan Nand',
+    status: 'Completed',
+    file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+    letter_html: 'Dear Admissions Committee,\\n\\nI am pleased to recommend the student...\\n\\nSincerely,\\nProf. Manas Mohan Nand'
+  })
+}).then(r => r.json()).then(console.log)
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_1757776967844';
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function testDirectAPI() {
+      try {
+        showResult('directResult', 'Testing direct API call (same domain)...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID,
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+          letter_html: 'Dear Admissions Committee,\\n\\nI am pleased to recommend the student for admission to your program. The student has demonstrated exceptional academic performance and leadership qualities.\\n\\nSincerely,\\nProf. Manas Mohan Nand'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('directResult', `✅ SUCCESS! Direct API call worked!\\n\\nResponse: ${result}\\n\\nThis proves the API is working correctly.\\nNow test the apply page to see the status update.`, 'success');
+        } else {
+          showResult('directResult', `❌ API call failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('directResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testCrossOrigin() {
+      try {
+        showResult('corsResult', 'Testing cross-origin call (simulating StellarRec)...', 'info');
+        
+        // This simulates what StellarRec would do
+        const testData = {
+          external_id: EXTERNAL_ID,
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf'
+        };
+        
+        const response = await fetch('https://mockuniversity.netlify.app/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('corsResult', `✅ SUCCESS! Cross-origin call worked!\\n\\nResponse: ${result}\\n\\nCORS headers are working correctly!\\nStellarRec integration is ready! 🚀`, 'success');
+        } else {
+          showResult('corsResult', `❌ Cross-origin call failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        if (error.message.includes('CORS')) {
+          showResult('corsResult', `❌ CORS ERROR: ${error.message}\\n\\nThis means the CORS headers need to be updated.\\nBut the direct API test should still work!`, 'error');
+        } else {
+          showResult('corsResult', `❌ ERROR: ${error.message}`, 'error');
+        }
+      }
+    }
+    
+    function openApplyPage() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('applyResult', `🚀 Opened apply page with external_id: ${EXTERNAL_ID}\\n\\nAfter running the API test, you should see:\\n"Prof. Manas Mohan Nand • Completed • Download file"\\n\\nWith green background at the top of the page.`, 'info');
+    }
+  </script>
+</body>
+</html>
