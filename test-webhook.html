@@ -137,6 +137,7 @@
       <h3>🔄 Step 3: Test Apply Page</h3>
       <p>Open the apply page with the external_id to see live updates.</p>
       <button onclick="openApplyPage()">Open Apply Page with Live Tracking</button>
+      <button onclick="testLetterDisplay()" class="btn-success">Test Letter Display</button>
       <div id="applyResult" class="status" style="display: none;"></div>
     </div>
     
@@ -301,8 +302,13 @@ Columbia University`,
       const result = document.getElementById('applyResult');
       
       if (applyWindow) {
-        result.className = 'status info';
-        result.textContent = `📱 Apply page opened with external_id: ${currentExternalId}`;
+        result.className = 'status success';
+        result.innerHTML = `
+          📱 <strong>Apply page opened!</strong><br>
+          🔗 URL: apply.html?external_id=${currentExternalId}<br>
+          📝 Expected: Letter content should appear in green text box<br>
+          ✅ Look for: "Recommendation Letter from Prof. Manas Mohan Nand via StellarRec"
+        `;
         log(`Opened apply page with external_id: ${currentExternalId}`);
       } else {
         result.className = 'status error';
@@ -353,6 +359,36 @@ Columbia University`,
     
     function clearLogs() {
       logElement.textContent = 'Logs cleared...\n';
+    }
+    
+    async function testLetterDisplay() {
+      const result = document.getElementById('applyResult');
+      
+      try {
+        // First send a completed recommendation
+        await sendCompletedRecommendation();
+        
+        // Wait a moment for it to be stored
+        setTimeout(() => {
+          // Then open the apply page
+          openApplyPage();
+          
+          result.className = 'status success';
+          result.innerHTML = `
+            🎯 <strong>Full Letter Display Test:</strong><br>
+            1. ✅ Sent completed recommendation with letter content<br>
+            2. ✅ Opened apply page with external_id<br>
+            3. 📝 Check for green text box with letter content<br>
+            4. 🏷️ Should show: "Recommendation Letter from Prof. Manas Mohan Nand via StellarRec"
+          `;
+        }, 1000);
+        
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = `❌ Test failed: ${error.message}`;
+      }
+      
+      result.style.display = 'block';
     }
   </script>
 </body>

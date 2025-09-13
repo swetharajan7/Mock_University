@@ -345,6 +345,34 @@
         <p><strong>Note:</strong> Undergraduate applicants, including those for Bachelor's Program for Adults and Transfer Students, are not 
         required to submit letters of recommendation but may choose to do so if they wish.</p>
       </div>
+
+      <!-- Recommendation Letter Display Area -->
+      <div id="recommendationLetterContainer" style="display: none; margin-bottom: 2rem;">
+        <div style="margin-bottom: 1rem;">
+          <label for="recommendationLetterText" style="font-weight: 600; color: var(--text); display: block; margin-bottom: 0.5rem;">
+            <span id="recommendationLetterLabel">Recommendation Letter</span>
+          </label>
+          <div id="recommendationLetterMeta" style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem;"></div>
+        </div>
+        <textarea 
+          id="recommendationLetterText" 
+          readonly
+          style="
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: #f8fff8;
+            color: var(--text);
+            resize: vertical;
+          "
+          placeholder="Recommendation letter will appear here when received from StellarRec..."
+        ></textarea>
+      </div>
       
       <!-- Recommendations Table -->
       <table class="recommendations-table">
@@ -448,6 +476,9 @@
           }
         }
 
+        // Display letter content in text area if available
+        displayLetterContent(rec);
+
         if (rowAction){
           rowAction.innerHTML = '';
           if (rec.status === 'completed'){
@@ -486,7 +517,19 @@
 
       async function poll(){
         try{
-          const res = await fetch(`/.netlify/functions/reco-status?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
+          // Try the new get-recommendation-data endpoint first
+          let res = await fetch(`/.netlify/functions/get-recommendation-data?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
+          
+          if (res.ok) {
+            const response = await res.json();
+            if (response.success && response.data) {
+              render(response.data);
+              return;
+            }
+          }
+          
+          // Fallback to the old reco-status endpoint
+          res = await fetch(`/.netlify/functions/reco-status?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
           if (res.ok){
             const rec = await res.json();
             render(rec);
@@ -596,6 +639,50 @@
           modal.remove();
         }
       };
+
+      // Function to display letter content in the text area
+      function displayLetterContent(rec) {
+        const letterContainer = document.getElementById('recommendationLetterContainer');
+        const letterText = document.getElementById('recommendationLetterText');
+        const letterLabel = document.getElementById('recommendationLetterLabel');
+        const letterMeta = document.getElementById('recommendationLetterMeta');
+
+        if (rec.letter_content && rec.letter_content.trim()) {
+          // Show the letter container
+          if (letterContainer) letterContainer.style.display = 'block';
+          
+          // Update the letter content
+          if (letterText) {
+            letterText.value = rec.letter_content;
+            letterText.style.border = '2px solid #4caf50';
+            letterText.style.background = '#f8fff8';
+          }
+          
+          // Update the label
+          if (letterLabel) {
+            letterLabel.innerHTML = `📝 Recommendation Letter from ${rec.recommender_name} via StellarRec`;
+          }
+          
+          // Update the meta information
+          if (letterMeta) {
+            const submittedDate = new Date(rec.updated_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            letterMeta.innerHTML = `
+              ✅ <strong>Status:</strong> ${rec.status.toUpperCase()} | 
+              📅 <strong>Submitted:</strong> ${submittedDate} | 
+              📊 <strong>Length:</strong> ${rec.letter_content.length} characters
+            `;
+          }
+        } else {
+          // Hide the letter container if no content
+          if (letterContainer) letterContainer.style.display = 'none';
+        }
+      }
 
       // Start polling
       poll();
