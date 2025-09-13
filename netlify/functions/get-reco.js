@@ -34,33 +34,83 @@ exports.handler = async (event) => {
     };
   }
   
-  // For demo purposes, return mock data for specific external_ids
+  // For demo purposes, return mock data with multiple file types
   const mockData = {
     'sr_1757777572835': {
       external_id: 'sr_1757777572835',
       recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
       status: 'Completed',
-      file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: 'Dear Admissions Committee at Mock University,\\n\\nI am writing to provide my strongest recommendation for Student Applicant, who has been my student in MA Historical Studies. Over the course of our academic relationship, I have been consistently impressed by their intellectual curiosity, analytical skills, and dedication to historical research.\\n\\nStudent Applicant demonstrates exceptional ability in:\\n- Critical analysis of historical sources\\n- Research methodology and archival work\\n- Written communication and argumentation\\n- Collaborative learning and peer engagement\\n\\nTheir thesis project on \"Colonial Administrative Practices in 18th Century India\" showcased remarkable depth of understanding and original insights that contributed meaningfully to our field of study.\\n\\nI recommend Student Applicant without reservation for admission to your program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in graduate studies.\\n\\nPlease feel free to contact me if you require any additional information.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nDepartment of Historical Studies\\nColumbia University',
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
       updated_at: new Date().toISOString()
     },
     'sr_1757776967844': {
       external_id: 'sr_1757776967844',
       recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
       status: 'Completed',
-      file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: 'Dear Admissions Committee,\\n\\nI am pleased to recommend the student for admission to your program...\\n\\nSincerely,\\nProf. Manas Mohan Nand',
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
       updated_at: new Date().toISOString()
     },
     'sr_1757775985322': {
       external_id: 'sr_1757775985322',
       recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
       status: 'Completed',
-      file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: 'Dear Admissions Committee,\\n\\nI am writing to recommend the student...\\n\\nSincerely,\\nProf. Manas Mohan Nand',
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
+      updated_at: new Date().toISOString()
+    },
+    // Add the specific external_id you're testing with
+    'sr_1757781570892': {
+      external_id: 'sr_1757781570892',
+      recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
+      status: 'Completed',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: 'Dear Admissions Committee at Mock University,\\n\\nI am writing to provide my strongest recommendation for the student applicant. This student has demonstrated exceptional academic performance and research capabilities throughout their studies.\\n\\nKey strengths include:\\n• Outstanding analytical and problem-solving skills\\n• Excellent written and oral communication\\n• Strong research methodology and critical thinking\\n• Collaborative teamwork and leadership qualities\\n• Dedication to academic excellence and innovation\\n\\nI have also prepared a video recommendation and comprehensive PDF documentation that provide additional insights into their qualifications and character.\\n\\nI recommend this student without reservation for admission to your graduate program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in advanced academic studies.\\n\\nPlease feel free to contact me if you require any additional information.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nDepartment of Computer Science\\nColumbia University\\nmanasnandmohan@gmail.com',
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
       updated_at: new Date().toISOString()
     }
   };
-
-  const data = mockData[external_id];
   
+  // Also check for any external_id that starts with 'sr_' and provide default data
+  let data = mockData[external_id];
+  
+  if (!data && external_id.startsWith('sr_')) {
+    // Provide default data for any sr_ external_id
+    data = {
+      external_id: external_id,
+      recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
+      status: 'Completed',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: `Dear Admissions Committee,\\n\\nI am writing to provide my recommendation for the student with reference ID ${external_id}.\\n\\nThis student has demonstrated excellent academic performance and shows great potential for success in your program.\\n\\nI recommend them for admission to your graduate program.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nColumbia University`,
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
+      updated_at: new Date().toISOString()
+    };
+  }
+
   if (!data) {
     return { 
       statusCode: 204, 

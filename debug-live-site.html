@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔍 Debug Live Site Issue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #dc2626;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .debug-section {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    .debug-section h3 {
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #b91c1c;
+    }
+    
+    .success {
+      background: #16a34a;
+    }
+    
+    .success:hover {
+      background: #15803d;
+    }
+    
+    .warning {
+      background: #ea580c;
+    }
+    
+    .warning:hover {
+      background: #c2410c;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .result.success {
+      background: #dcfce7;
+      border: 1px solid #16a34a;
+      color: #166534;
+    }
+    
+    .result.error {
+      background: #fef2f2;
+      border: 1px solid #dc2626;
+      color: #991b1b;
+    }
+    
+    .result.info {
+      background: #dbeafe;
+      border: 1px solid #2563eb;
+      color: #1d4ed8;
+    }
+    
+    .result.warning {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+    }
+    
+    .external-id {
+      background: #dc2626;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      display: inline-block;
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Debug Live Site Issue</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Troubleshooting why the status won't update for external_id: sr_1757781570892
+    </p>
+    
+    <div class="external-id">
+      Target External ID: sr_1757781570892
+    </div>
+    
+    <div class="debug-section">
+      <h3>🎯 Step 1: Check API Response</h3>
+      <p>Test what the get-reco API returns for this external_id:</p>
+      <button onclick="checkAPI()">🔍 Check API Response</button>
+      <div id="apiResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>📤 Step 2: Send Test Data</h3>
+      <p>Send a test recommendation to this external_id:</p>
+      <button onclick="sendTestData()" class="warning">📤 Send Test Data</button>
+      <div id="sendResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>🔄 Step 3: Re-check API</h3>
+      <p>Check if the API now returns data after sending:</p>
+      <button onclick="recheckAPI()" class="success">🔄 Re-check API</button>
+      <div id="recheckResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>🌐 Step 4: Test Live Apply Page</h3>
+      <p>Open the live apply page and check browser console:</p>
+      <button onclick="openLivePage()" class="success">🌐 Open Live Page</button>
+      <div id="liveResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>🔧 Step 5: Check Function Logs</h3>
+      <p>Instructions for checking Netlify function logs:</p>
+      <button onclick="showLogInstructions()" class="warning">📋 Show Log Instructions</button>
+      <div id="logResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>⚡ Step 6: Force Cache Refresh</h3>
+      <p>Try to force refresh the apply page:</p>
+      <button onclick="forceCacheRefresh()" class="warning">⚡ Force Cache Refresh</button>
+      <div id="cacheResult" class="result" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_1757781570892';
+    const LIVE_SITE = 'https://mockuniversity.netlify.app';
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function checkAPI() {
+      try {
+        showResult('apiResult', 'Checking API response...', 'info');
+        
+        const url = `${LIVE_SITE}/api/get-reco?external_id=${EXTERNAL_ID}`;
+        console.log('Checking URL:', url);
+        
+        const response = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        
+        if (response.status === 204) {
+          showResult('apiResult', `❌ API ISSUE FOUND!
+          
+URL: ${url}
+Status: 204 (No Content)
+Meaning: No recommendation found for external_id: ${EXTERNAL_ID}
+
+This means either:
+1. The recommendation was never saved
+2. The external_id doesn't match
+3. The save-reco function isn't working
+4. There's a data storage issue
+
+Next: Try Step 2 to send test data`, 'error');
+        } else if (response.ok) {
+          const data = await response.json();
+          showResult('apiResult', `✅ API WORKING!
+          
+URL: ${url}
+Status: ${response.status}
+Data found: YES
+
+Response:
+${JSON.stringify(data, null, 2)}
+
+If data exists but page doesn't update, it's a frontend issue.`, 'success');
+        } else {
+          const errorText = await response.text();
+          showResult('apiResult', `⚠️ API ERROR
+          
+URL: ${url}
+Status: ${response.status}
+Error: ${errorText}
+
+This indicates a server-side issue.`, 'warning');
+        }
+        
+      } catch (error) {
+        showResult('apiResult', `❌ NETWORK ERROR
+        
+Error: ${error.message}
+
+This could be:
+1. CORS issue
+2. Network connectivity
+3. Function not deployed
+4. URL incorrect`, 'error');
+      }
+    }
+    
+    async function sendTestData() {
+      try {
+        showResult('sendResult', 'Sending test data to save-reco...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID,
+          recommender_name: 'Debug Test Recommender',
+          recommender_email: 'debug@test.com',
+          student_name: 'Debug Test Student',
+          student_email: 'student@test.com',
+          program: 'Debug Program',
+          status: 'Completed',
+          pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+          mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+          letter_content: 'This is a debug test letter to troubleshoot the live site issue.'
+        };
+        
+        const url = `${LIVE_SITE}/api/save-reco`;
+        console.log('Sending to URL:', url);
+        console.log('Payload:', testData);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.json();
+        console.log('Save response:', result);
+        
+        if (response.ok) {
+          showResult('sendResult', `✅ TEST DATA SENT!
+          
+URL: ${url}
+Status: ${response.status}
+External ID: ${EXTERNAL_ID}
+
+Response:
+${JSON.stringify(result, null, 2)}
+
+Next: Try Step 3 to re-check the API`, 'success');
+        } else {
+          showResult('sendResult', `❌ SEND FAILED
+          
+URL: ${url}
+Status: ${response.status}
+Error: ${JSON.stringify(result, null, 2)}
+
+This indicates the save-reco function has issues.`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('sendResult', `❌ SEND ERROR
+        
+Error: ${error.message}
+
+This could be:
+1. CORS issue with save-reco
+2. Function not deployed
+3. Network issue`, 'error');
+      }
+    }
+    
+    async function recheckAPI() {
+      // Same as checkAPI but with different result div
+      try {
+        showResult('recheckResult', 'Re-checking API after sending test data...', 'info');
+        
+        const url = `${LIVE_SITE}/api/get-reco?external_id=${EXTERNAL_ID}&t=${Date.now()}`;
+        
+        const response = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (response.status === 204) {
+          showResult('recheckResult', `❌ STILL NO DATA!
+          
+Status: 204 (No Content)
+Meaning: The save-reco function didn't work or data isn't persisting
+
+Possible issues:
+1. save-reco function has bugs
+2. Data isn't being stored properly
+3. get-reco function has bugs
+4. External ID mismatch
+
+Check Netlify function logs for errors.`, 'error');
+        } else if (response.ok) {
+          const data = await response.json();
+          showResult('recheckResult', `✅ DATA NOW EXISTS!
+          
+Status: ${response.status}
+Data: ${JSON.stringify(data, null, 2)}
+
+The API is working! If the apply page still doesn't update:
+1. Check browser console for JavaScript errors
+2. Try hard refresh (Ctrl+F5)
+3. Check if apply.html is using the correct API endpoint`, 'success');
+        } else {
+          const errorText = await response.text();
+          showResult('recheckResult', `⚠️ API ERROR
+          
+Status: ${response.status}
+Error: ${errorText}`, 'warning');
+        }
+        
+      } catch (error) {
+        showResult('recheckResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    function openLivePage() {
+      const url = `${LIVE_SITE}/apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      
+      showResult('liveResult', `🌐 OPENED LIVE PAGE
+      
+URL: ${url}
+
+DEBUGGING CHECKLIST:
+1. Open browser DevTools (F12)
+2. Go to Console tab
+3. Look for errors (red text)
+4. Check Network tab for API calls
+5. Look for failed requests to /api/get-reco
+
+Common issues to look for:
+❌ CORS errors
+❌ 404 errors on /api/get-reco
+❌ JavaScript errors in console
+❌ Failed fetch requests
+❌ Incorrect external_id in URL
+
+If you see errors, copy them and we'll fix them!`, 'info');
+    }
+    
+    function showLogInstructions() {
+      showResult('logResult', `📋 NETLIFY FUNCTION LOG INSTRUCTIONS
+      
+To check function logs:
+
+1. Go to: https://app.netlify.com
+2. Find your Mock_University site
+3. Click on "Functions" tab
+4. Look for these functions:
+   - save-reco
+   - get-reco
+5. Click on each function
+6. Check "Function log" for errors
+
+What to look for:
+❌ Function deployment errors
+❌ Runtime errors when calling functions
+❌ CORS issues
+❌ Missing environment variables
+❌ Syntax errors in function code
+
+Alternative: Check real-time logs
+1. In Netlify dashboard
+2. Go to "Site overview"
+3. Click "View function logs"
+4. Try the API calls while watching logs
+
+If you see errors in logs, copy them here!`, 'warning');
+    }
+    
+    function forceCacheRefresh() {
+      const url = `${LIVE_SITE}/apply.html?external_id=${EXTERNAL_ID}&cache_bust=${Date.now()}`;
+      window.open(url, '_blank');
+      
+      showResult('cacheResult', `⚡ FORCE CACHE REFRESH
+      
+Opened with cache-busting URL:
+${url}
+
+Also try these manual steps:
+1. Hard refresh: Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
+2. Clear browser cache for the site
+3. Open in incognito/private mode
+4. Try different browser
+
+If it still doesn't work after cache refresh:
+- The issue is likely in the API functions
+- Check the function logs (Step 5)
+- Verify the functions are deployed correctly`, 'info');
+    }
+    
+    // Auto-run the first check
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(checkAPI, 1000);
+    });
+  </script>
+</body>
+</html>
