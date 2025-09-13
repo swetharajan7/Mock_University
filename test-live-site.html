@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚨 Live Site Test - MockUniversity</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    .success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚨 Live Site Emergency Test</h1>
+    <p><strong>Testing URL:</strong> <code>https://mockuniversity.netlify.app/apply.html?external_id=sr_1757774170029</code></p>
+    
+    <div class="test-section">
+      <h3>🔧 Test Netlify Functions</h3>
+      <button onclick="testRecoHook()">Test reco-hook Function</button>
+      <button onclick="testGetData()">Test get-recommendation-data Function</button>
+      <div id="functionsResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📝 Send Test Data for Your External ID</h3>
+      <button onclick="sendTestDataForYourId()">Send Data for sr_1757774170029</button>
+      <div id="testDataResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔍 Check Your External ID Status</h3>
+      <button onclick="checkYourIdStatus()">Check sr_1757774170029 Status</button>
+      <div id="statusResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🚀 Quick Fix Actions</h3>
+      <button onclick="openApplyPageWithId()">Open Apply Page with Your ID</button>
+      <button onclick="openNetlifyDashboard()">Open Netlify Dashboard</button>
+      <div id="quickFixResult" class="result" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    const YOUR_EXTERNAL_ID = 'sr_1757774170029';
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function testRecoHook() {
+      try {
+        showResult('functionsResult', 'Testing reco-hook function...', 'info');
+        
+        const response = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            external_id: 'test_function_check',
+            student_name: 'Test Student',
+            recommender_name: 'Test Recommender',
+            status: 'pending'
+          })
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('functionsResult', `✅ reco-hook is working!\nStatus: ${response.status}\nResponse: ${result}`, 'success');
+        } else {
+          showResult('functionsResult', `❌ reco-hook failed!\nStatus: ${response.status}\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('functionsResult', `❌ reco-hook error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testGetData() {
+      try {
+        showResult('functionsResult', 'Testing get-recommendation-data function...', 'info');
+        
+        const response = await fetch(`/.netlify/functions/get-recommendation-data?external_id=test_function_check`);
+        const result = await response.text();
+        
+        if (response.ok || response.status === 404) {
+          showResult('functionsResult', `✅ get-recommendation-data is working!\nStatus: ${response.status}\nResponse: ${result}`, 'success');
+        } else {
+          showResult('functionsResult', `❌ get-recommendation-data failed!\nStatus: ${response.status}\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('functionsResult', `❌ get-recommendation-data error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function sendTestDataForYourId() {
+      try {
+        showResult('testDataResult', `Sending test data for ${YOUR_EXTERNAL_ID}...`, 'info');
+        
+        const testData = {
+          external_id: YOUR_EXTERNAL_ID,
+          student_name: 'Student Applicant',
+          student_email: 'swetha.rajan103@gmail.com',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          recommender_email: 'manasnandmohan@gmail.com',
+          universities: [
+            { unitid: 'mock_univ_001', name: 'MockUniversity' }
+          ],
+          status: 'completed',
+          letter_content: \`Dear Admissions Committee at Mock University,
+
+I am writing to provide my strongest recommendation for Student Applicant, who has been my student in MA Historical Studies. Over the course of our academic relationship, I have been consistently impressed by their intellectual curiosity, analytical skills, and dedication to historical research.
+
+Student Applicant demonstrates exceptional ability in:
+- Critical analysis of historical sources
+- Research methodology and archival work  
+- Written communication and argumentation
+- Collaborative learning and peer engagement
+
+Their thesis project on "Colonial Administrative Practices in 18th Century India" showcased remarkable depth of understanding and original insights that contributed meaningfully to our field of study.
+
+I recommend Student Applicant without reservation for admission to your program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in graduate studies.
+
+Please feel free to contact me if you require any additional information.
+
+Sincerely,
+Prof. Manas Mohan Nand
+Department of Historical Studies
+Columbia University\`,
+          letter_format: 'text',
+          artifact_url: 'https://example.com/recommendations/sample-recommendation.pdf',
+          ts: Date.now()
+        };
+        
+        const response = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('testDataResult', `✅ Test data sent successfully for ${YOUR_EXTERNAL_ID}!\n\nNow visit: https://mockuniversity.netlify.app/apply.html?external_id=${YOUR_EXTERNAL_ID}\n\nYou should see the green text box with the letter!`, 'success');
+        } else {
+          showResult('testDataResult', `❌ Failed to send test data!\nStatus: ${response.status}\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('testDataResult', `❌ Error sending test data: ${error.message}`, 'error');
+      }
+    }
+    
+    async function checkYourIdStatus() {
+      try {
+        showResult('statusResult', `Checking status for ${YOUR_EXTERNAL_ID}...`, 'info');
+        
+        const response = await fetch(\`/.netlify/functions/get-recommendation-data?external_id=\${YOUR_EXTERNAL_ID}\`);
+        const result = await response.text();
+        
+        if (response.ok) {
+          const data = JSON.parse(result);
+          showResult('statusResult', \`✅ Found data for \${YOUR_EXTERNAL_ID}!\n\nData: \${JSON.stringify(data, null, 2)}\`, 'success');
+        } else if (response.status === 404) {
+          showResult('statusResult', \`⚠️ No data found for \${YOUR_EXTERNAL_ID}\n\nThis means StellarRec hasn't sent the data yet, or there's an issue with the webhook.\n\nTry clicking "Send Test Data" above.\`, 'error');
+        } else {
+          showResult('statusResult', \`❌ Error checking status!\nStatus: \${response.status}\nError: \${result}\`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('statusResult', \`❌ Error checking status: \${error.message}\`, 'error');
+      }
+    }
+    
+    function openApplyPageWithId() {
+      const url = \`https://mockuniversity.netlify.app/apply.html?external_id=\${YOUR_EXTERNAL_ID}\`;
+      window.open(url, '_blank');
+      showResult('quickFixResult', \`Opened apply page with your external_id: \${YOUR_EXTERNAL_ID}\`, 'info');
+    }
+    
+    function openNetlifyDashboard() {
+      window.open('https://app.netlify.com/sites/mockuniversity/overview', '_blank');
+      showResult('quickFixResult', 'Opened Netlify dashboard. Check:\n1. Build status\n2. Environment variables (NETLIFY_BLOBS_TOKEN)\n3. Function logs', 'info');
+    }
+  </script>
+</body>
+</html>
