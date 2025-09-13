@@ -1,4 +1,9 @@
-// Simple storage using environment variables (temporary solution)
+// Real-time recommendation storage for StellarRec integration
+// This stores data that can be retrieved by get-reco.js
+
+// In-memory storage (for demo - in production use database)
+global.recommendationStorage = global.recommendationStorage || new Map();
+
 exports.handler = async (event) => {
   // CORS headers for all responses
   const corsHeaders = {
@@ -66,8 +71,11 @@ exports.handler = async (event) => {
     has_letter: !!(files.letter_content || files.letter_text)
   };
 
+  // Store in global memory for real-time access
+  global.recommendationStorage.set(external_id, result);
+
   // Log detailed file information
-  console.log('Recommendation with files saved:', {
+  console.log('Recommendation with files saved to storage:', {
     external_id,
     recommender: body.recommender_name,
     status: result.status,
@@ -76,7 +84,8 @@ exports.handler = async (event) => {
       video: files.mov_url ? 'YES' : 'NO',
       letter: files.letter_content ? 'YES' : 'NO'
     },
-    timestamp: now
+    timestamp: now,
+    storage_size: global.recommendationStorage.size
   });
 
   // Also forward to receive-recommendation endpoint for Mock University integration

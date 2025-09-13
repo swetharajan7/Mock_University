@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔄 Real-Time Integration Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      height: calc(100vh - 2rem);
+    }
+    
+    .panel {
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel h2 {
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #1976d2;
+    }
+    
+    .stellarrec {
+      border-top: 4px solid #ff6b35;
+    }
+    
+    .mockuniversity {
+      border-top: 4px solid #1976d2;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #555;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .send-btn {
+      background: #ff6b35;
+    }
+    
+    .send-btn:hover {
+      background: #e55a2b;
+    }
+    
+    .status {
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .status.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .status.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .status.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+    
+    .mock-display {
+      flex: 1;
+      border: 2px solid #1976d2;
+      border-radius: 8px;
+      padding: 1rem;
+      background: #f8f9fa;
+      overflow-y: auto;
+    }
+    
+    .mock-status {
+      background: #1976d2;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .file-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .file-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .file-btn.pdf {
+      background: #dc2626;
+      color: white;
+    }
+    
+    .file-btn.video {
+      background: #7c3aed;
+      color: white;
+    }
+    
+    .file-btn.letter {
+      background: #059669;
+      color: white;
+    }
+    
+    .external-id {
+      background: #374151;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .refresh-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #4caf50;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    .letter-preview {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      white-space: pre-wrap;
+      font-family: 'Times New Roman', serif;
+      line-height: 1.6;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- StellarRec Panel -->
+    <div class="panel stellarrec">
+      <h2>🌟 StellarRec Dashboard</h2>
+      <p style="color: #666; margin-bottom: 1rem;">Simulate judges entering information in real-time</p>
+      
+      <div class="external-id" id="externalIdDisplay">
+        External ID: <span id="externalIdValue">Loading...</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="recommenderName">Recommender Name</label>
+        <input type="text" id="recommenderName" value="Prof. Manas Mohan Nand" />
+      </div>
+      
+      <div class="form-group">
+        <label for="recommenderEmail">Recommender Email</label>
+        <input type="email" id="recommenderEmail" value="manasnandmohan@gmail.com" />
+      </div>
+      
+      <div class="form-group">
+        <label for="studentName">Student Name</label>
+        <input type="text" id="studentName" value="Student Applicant" />
+      </div>
+      
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="Pending">Pending</option>
+          <option value="Completed" selected>Completed</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="letterContent">📝 Letter Content (Type here to see real-time updates)</label>
+        <textarea id="letterContent" placeholder="Start typing your recommendation letter here...">Dear Admissions Committee,
+
+I am writing to provide my strongest recommendation for the student applicant. This student has demonstrated exceptional academic performance and research capabilities.
+
+Key strengths include:
+• Outstanding analytical and problem-solving skills
+• Excellent written and oral communication
+• Strong research methodology and critical thinking
+• Collaborative teamwork and leadership qualities
+
+I recommend this student without reservation for admission to your graduate program.
+
+Sincerely,
+Prof. Manas Mohan Nand</textarea>
+      </div>
+      
+      <button onclick="sendUpdate()" class="send-btn">📤 Send Update to Mock University</button>
+      <button onclick="toggleAutoSend()">🔄 Toggle Auto-Send (Every 2s)</button>
+      
+      <div id="stellarrecStatus" class="status" style="display: none;"></div>
+    </div>
+    
+    <!-- Mock University Panel -->
+    <div class="panel mockuniversity">
+      <h2>🎓 Mock University View</h2>
+      <p style="color: #666; margin-bottom: 1rem;">Live view of what judges see</p>
+      
+      <div class="auto-refresh">
+        <div class="refresh-indicator"></div>
+        <span>Auto-refreshing every 2 seconds</span>
+      </div>
+      
+      <div class="mock-display">
+        <div class="mock-status" id="mockStatus">
+          Loading...
+        </div>
+        
+        <div class="file-buttons" id="fileButtons">
+          <!-- File buttons will be populated here -->
+        </div>
+        
+        <div class="letter-preview" id="letterPreview">
+          Letter content will appear here...
+        </div>
+      </div>
+      
+      <button onclick="openMockUniversityPage()">🌐 Open Live Mock University Page</button>
+      
+      <div id="mockUniversityStatus" class="status" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_realtime_' + Date.now();
+    let autoSendInterval = null;
+    let autoRefreshInterval = null;
+    
+    // Initialize
+    document.getElementById('externalIdValue').textContent = EXTERNAL_ID;
+    
+    function showStatus(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `status ${type}`;
+      element.innerHTML = message;
+      element.style.display = 'block';
+    }
+    
+    async function sendUpdate() {
+      try {
+        const data = {
+          external_id: EXTERNAL_ID,
+          recommender_name: document.getElementById('recommenderName').value,
+          recommender_email: document.getElementById('recommenderEmail').value,
+          student_name: document.getElementById('studentName').value,
+          student_email: 'student@mockuniversity.edu',
+          program: 'Graduate Program',
+          status: document.getElementById('status').value,
+          letter_content: document.getElementById('letterContent').value,
+          pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+          mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov'
+        };
+        
+        showStatus('stellarrecStatus', 'Sending update to Mock University...', 'info');
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showStatus('stellarrecStatus', `✅ Update sent successfully!\\nTimestamp: ${new Date().toLocaleTimeString()}\\nExternal ID: ${EXTERNAL_ID}`, 'success');
+          
+          // Immediately refresh Mock University view
+          setTimeout(refreshMockUniversity, 500);
+        } else {
+          showStatus('stellarrecStatus', `❌ Failed to send update\\nError: ${JSON.stringify(result)}`, 'error');
+        }
+        
+      } catch (error) {
+        showStatus('stellarrecStatus', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function refreshMockUniversity() {
+      try {
+        const response = await fetch(`/api/get-reco?external_id=${EXTERNAL_ID}&t=${Date.now()}`, {
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update status
+          const statusEl = document.getElementById('mockStatus');
+          if (data.status === 'Completed') {
+            statusEl.innerHTML = `✅ ${data.recommender_name} • COMPLETED • 📄 PDF • 🎥 Video • 📝 Letter`;
+            statusEl.style.background = '#4caf50';
+          } else {
+            statusEl.innerHTML = `⏳ ${data.recommender_name} • PENDING`;
+            statusEl.style.background = '#ff9800';
+          }
+          
+          // Update file buttons
+          const buttonsEl = document.getElementById('fileButtons');
+          buttonsEl.innerHTML = '';
+          
+          if (data.pdf_url) {
+            buttonsEl.innerHTML += `<a href="${data.pdf_url}" target="_blank" class="file-btn pdf">📄 PDF</a>`;
+          }
+          
+          if (data.mov_url) {
+            buttonsEl.innerHTML += `<a href="${data.mov_url}" target="_blank" class="file-btn video">🎥 Video</a>`;
+          }
+          
+          if (data.letter_content) {
+            buttonsEl.innerHTML += `<button onclick="showLetterModal()" class="file-btn letter">📝 Letter</button>`;
+          }
+          
+          // Update letter preview
+          const letterEl = document.getElementById('letterPreview');
+          if (data.letter_content) {
+            letterEl.textContent = data.letter_content;
+            letterEl.style.display = 'block';
+          } else {
+            letterEl.textContent = 'No letter content yet...';
+            letterEl.style.display = 'block';
+          }
+          
+          showStatus('mockUniversityStatus', `✅ Updated: ${new Date().toLocaleTimeString()}\\nStatus: ${data.status}\\nRecommender: ${data.recommender_name}`, 'success');
+          
+        } else if (response.status === 204) {
+          document.getElementById('mockStatus').innerHTML = '⏳ No recommendation found yet';
+          document.getElementById('mockStatus').style.background = '#6b7280';
+          document.getElementById('fileButtons').innerHTML = '';
+          document.getElementById('letterPreview').textContent = 'Waiting for recommendation...';
+          
+          showStatus('mockUniversityStatus', `⏳ No data yet for ${EXTERNAL_ID}`, 'info');
+        } else {
+          showStatus('mockUniversityStatus', `⚠️ API Error: ${response.status}`, 'error');
+        }
+        
+      } catch (error) {
+        showStatus('mockUniversityStatus', `❌ Refresh Error: ${error.message}`, 'error');
+      }
+    }
+    
+    function toggleAutoSend() {
+      if (autoSendInterval) {
+        clearInterval(autoSendInterval);
+        autoSendInterval = null;
+        showStatus('stellarrecStatus', '⏸️ Auto-send disabled', 'info');
+      } else {
+        autoSendInterval = setInterval(sendUpdate, 2000);
+        showStatus('stellarrecStatus', '▶️ Auto-send enabled (every 2 seconds)', 'success');
+      }
+    }
+    
+    function openMockUniversityPage() {
+      const url = `https://mockuniversity.netlify.app/apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showStatus('mockUniversityStatus', `🌐 Opened live page:\\n${url}`, 'info');
+    }
+    
+    function showLetterModal() {
+      alert('Letter modal would open here with full content');
+    }
+    
+    // Auto-refresh Mock University view
+    autoRefreshInterval = setInterval(refreshMockUniversity, 2000);
+    
+    // Initial load
+    setTimeout(refreshMockUniversity, 1000);
+    
+    // Auto-send when typing (debounced)
+    let typingTimer;
+    document.getElementById('letterContent').addEventListener('input', function() {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(sendUpdate, 1000); // Send 1 second after stopping typing
+    });
+  </script>
+</body>
+</html>

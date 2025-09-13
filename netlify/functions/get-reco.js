@@ -1,4 +1,9 @@
-// Simple retrieval function (temporary solution)
+// Real-time recommendation retrieval for StellarRec integration
+// This checks real-time storage first, then falls back to mock data
+
+// Access the same global storage used by save-reco.js
+global.recommendationStorage = global.recommendationStorage || new Map();
+
 exports.handler = async (event) => {
   // CORS headers for all responses
   const corsHeaders = {
@@ -33,8 +38,27 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: 'external_id required' }) 
     };
   }
+
+  // First check real-time storage from save-reco
+  let data = global.recommendationStorage.get(external_id);
   
-  // For demo purposes, return mock data with multiple file types
+  if (data) {
+    console.log('Retrieved from real-time storage:', {
+      external_id,
+      recommender: data.recommender_name,
+      status: data.status,
+      timestamp: data.updated_at,
+      storage_size: global.recommendationStorage.size
+    });
+    
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify(data)
+    };
+  }
+  
+  // Fallback to mock data with multiple file types
   const mockData = {
     'sr_1757777572835': {
       external_id: 'sr_1757777572835',
