@@ -181,6 +181,11 @@
       color: #065f46;
     }
     
+    .status-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
     .status-submitted {
       background: #dbeafe;
       color: #1e40af;
@@ -296,7 +301,7 @@
   <!-- Header -->
   <div class="header">
     <div class="header-content">
-      <a class="logo" href="../index.html">
+      <a class="logo" href="index.html">
         <span class="material-icons">school</span>
         MU Mock University
       </a>
@@ -340,6 +345,34 @@
         <p><strong>Note:</strong> Undergraduate applicants, including those for Bachelor's Program for Adults and Transfer Students, are not 
         required to submit letters of recommendation but may choose to do so if they wish.</p>
       </div>
+
+      <!-- Recommendation Letter Display Area -->
+      <div id="recommendationLetterContainer" style="display: none; margin-bottom: 2rem;">
+        <div style="margin-bottom: 1rem;">
+          <label for="recommendationLetterText" style="font-weight: 600; color: var(--text); display: block; margin-bottom: 0.5rem;">
+            <span id="recommendationLetterLabel">Recommendation Letter</span>
+          </label>
+          <div id="recommendationLetterMeta" style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem;"></div>
+        </div>
+        <textarea 
+          id="recommendationLetterText" 
+          readonly
+          style="
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: #f8fff8;
+            color: var(--text);
+            resize: vertical;
+          "
+          placeholder="Recommendation letter will appear here when received from StellarRec..."
+        ></textarea>
+      </div>
       
       <!-- Recommendations Table -->
       <table class="recommendations-table">
@@ -354,6 +387,21 @@
           <tr id="noRecommendersRow">
             <td colspan="3" class="no-recommenders">
               No recommenders yet
+            </td>
+          </tr>
+          <!-- Live recommendation row will be populated by JavaScript -->
+          <tr id="liveRecommendationRow" style="display: none;">
+            <td>
+              <div style="font-weight: 600;"><span data-reco-name>—</span></div>
+              <div style="font-size: 0.85rem; color: var(--muted);" data-reco-email>—</div>
+            </td>
+            <td>
+              <span class="status-badge" data-reco-status-badge>
+                <span data-reco-status>PENDING</span>
+              </span>
+            </td>
+            <td>
+              <span data-reco-action>Pending</span>
             </td>
           </tr>
         </tbody>
@@ -384,7 +432,278 @@
   </div>
   
   <!-- StellarRec Integration Script -->
-  <script src="stellarrec-integration.js"></script>
+  <script src="js/stellarrec-integration.js"></script>
+  
+  <!-- Live Status Tracking Script -->
+  <script>
+    (async function(){
+      // 1) Read external_id from URL (StellarRec will include it)
+      const params = new URLSearchParams(location.search);
+      const externalId = params.get('external_id');
+      if (!externalId) return; // page can still load without it
+
+      // 2) UI helpers
+      const rowName = document.querySelector('[data-reco-name]');
+      const rowEmail = document.querySelector('[data-reco-email]');
+      const rowStatus = document.querySelector('[data-reco-status]');
+      const rowStatusBadge = document.querySelector('[data-reco-status-badge]');
+      const rowAction = document.querySelector('[data-reco-action]');
+      const liveRow = document.getElementById('liveRecommendationRow');
+      const noRecoRow = document.getElementById('noRecommendersRow');
+
+      function render(rec){
+        // Show the live row and hide "no recommenders"
+        if (liveRow) liveRow.style.display = 'table-row';
+        if (noRecoRow) noRecoRow.style.display = 'none';
+
+        if (rowName) rowName.textContent = rec.recommender_name || '—';
+        if (rowEmail) rowEmail.textContent = rec.recommender_email || '—';
+        if (rowStatus) rowStatus.textContent = (rec.status || 'pending').toUpperCase();
+        
+        // Update status badge styling
+        if (rowStatusBadge) {
+          rowStatusBadge.className = 'status-badge';
+          const status = rec.status || 'pending';
+          if (status === 'pending') {
+            rowStatusBadge.classList.add('status-pending');
+            rowStatus.innerHTML = '⏳ PENDING';
+          } else if (status === 'completed') {
+            rowStatusBadge.classList.add('status-completed');
+            rowStatus.innerHTML = '✅ COMPLETED';
+          } else if (status === 'sent') {
+            rowStatusBadge.classList.add('status-received');
+            rowStatus.innerHTML = '📤 SENT';
+          }
+        }
+
+        // Display letter content in text area if available
+        displayLetterContent(rec);
+
+        if (rowAction){
+          rowAction.innerHTML = '';
+          if (rec.status === 'completed'){
+            // Create action buttons container
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.cssText = 'display: flex; gap: 0.5rem; flex-wrap: wrap;';
+            
+            // View Letter button (always available when completed)
+            if (rec.letter_content) {
+              const viewBtn = document.createElement('button');
+              viewBtn.className = 'btn btn-secondary';
+              viewBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem;';
+              viewBtn.innerHTML = '<span class="material-icons" style="font-size: 16px;">visibility</span> View Letter';
+              viewBtn.onclick = () => showLetterModal(rec);
+              actionsDiv.appendChild(viewBtn);
+            }
+            
+            // Download button (if artifact URL is available)
+            if (rec.artifact_url) {
+              const downloadBtn = document.createElement('a');
+              downloadBtn.href = rec.artifact_url;
+              downloadBtn.target = '_blank';
+              downloadBtn.rel = 'noopener';
+              downloadBtn.className = 'btn btn-secondary';
+              downloadBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;';
+              downloadBtn.innerHTML = '<span class="material-icons" style="font-size: 16px;">download</span> Download';
+              actionsDiv.appendChild(downloadBtn);
+            }
+            
+            rowAction.appendChild(actionsDiv);
+          } else {
+            rowAction.innerHTML = '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>';
+          }
+        }
+      }
+
+      async function poll(){
+        try{
+          // Try the new get-recommendation-data endpoint first
+          let res = await fetch(`/.netlify/functions/get-recommendation-data?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
+          
+          if (res.ok) {
+            const response = await res.json();
+            if (response.success && response.data) {
+              render(response.data);
+              return;
+            }
+          }
+          
+          // Fallback to the old reco-status endpoint
+          res = await fetch(`/.netlify/functions/reco-status?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
+          if (res.ok){
+            const rec = await res.json();
+            render(rec);
+          }
+        }catch(e){
+          console.log('Polling error:', e);
+        }
+        setTimeout(poll, 2500); // lightweight live update every 2.5 seconds
+      }
+
+      // Letter modal functionality
+      window.showLetterModal = function(rec) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'letter-modal-overlay';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 2rem;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'letter-modal-content';
+        modalContent.style.cssText = `
+          background: white;
+          border-radius: 16px;
+          padding: 2rem;
+          max-width: 700px;
+          width: 100%;
+          max-height: 80vh;
+          overflow-y: auto;
+          position: relative;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        `;
+        
+        modalContent.innerHTML = `
+          <button onclick="closeLetterModal()" style="
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">&times;</button>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="color: var(--brand-1); margin-bottom: 0.5rem;">Recommendation Letter</h2>
+            <div style="color: var(--muted); font-size: 0.9rem;">
+              <strong>From:</strong> ${rec.recommender_name}<br>
+              <strong>For:</strong> ${rec.student_name}<br>
+              <strong>Date:</strong> ${new Date(rec.updated_at).toLocaleDateString()}
+            </div>
+          </div>
+          
+          <div style="
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            min-height: 200px;
+          ">${rec.letter_content || 'Letter content not available.'}</div>
+          
+          <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+            ${rec.artifact_url ? `
+              <a href="${rec.artifact_url}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">download</span>
+                Download PDF
+              </a>
+            ` : ''}
+            <button onclick="closeLetterModal()" class="btn btn-secondary">Close</button>
+          </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Close on overlay click
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeLetterModal();
+          }
+        });
+      };
+      
+      window.closeLetterModal = function() {
+        const modal = document.querySelector('.letter-modal-overlay');
+        if (modal) {
+          modal.remove();
+        }
+      };
+
+      // Function to display letter content in the text area
+      function displayLetterContent(rec) {
+        const letterContainer = document.getElementById('recommendationLetterContainer');
+        const letterText = document.getElementById('recommendationLetterText');
+        const letterLabel = document.getElementById('recommendationLetterLabel');
+        const letterMeta = document.getElementById('recommendationLetterMeta');
+
+        if (rec.letter_content && rec.letter_content.trim()) {
+          // Show the letter container
+          if (letterContainer) letterContainer.style.display = 'block';
+          
+          // Update the letter content
+          if (letterText) {
+            letterText.value = rec.letter_content;
+            letterText.style.border = '2px solid #4caf50';
+            letterText.style.background = '#f8fff8';
+          }
+          
+          // Update the label
+          if (letterLabel) {
+            letterLabel.innerHTML = `📝 Recommendation Letter from ${rec.recommender_name} via StellarRec`;
+          }
+          
+          // Update the meta information
+          if (letterMeta) {
+            const submittedDate = new Date(rec.updated_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            letterMeta.innerHTML = `
+              ✅ <strong>Status:</strong> ${rec.status.toUpperCase()} | 
+              📅 <strong>Submitted:</strong> ${submittedDate} | 
+              📊 <strong>Length:</strong> ${rec.letter_content.length} characters
+            `;
+          }
+        } else {
+          // Hide the letter container if no content
+          if (letterContainer) letterContainer.style.display = 'none';
+        }
+      }
+
+      // Start polling
+      poll();
+      
+      // Also show integration status
+      const stellarrecStatus = document.getElementById('stellarrecStatus');
+      if (stellarrecStatus) {
+        stellarrecStatus.style.display = 'block';
+        stellarrecStatus.innerHTML = `
+          <h4 style="color: var(--brand-1); margin-bottom: 0.5rem;">
+            <span class="material-icons" style="font-size: 18px; vertical-align: middle;">link</span>
+            StellarRec Integration Active
+          </h4>
+          <p style="color: var(--muted); font-size: 0.9rem;">
+            Live tracking recommendation ID: <code>${externalId}</code><br>
+            Status updates automatically every 2.5 seconds.
+          </p>
+        `;
+      }
+    })();
+  </script>
   
   <script>
     // Application functionality
@@ -505,13 +824,21 @@
           </td>
           <td>
             <span class="status-badge status-${rec.status.toLowerCase()}">
-              ${rec.status === 'Pending' ? '⏳' : rec.status === 'Received' ? '✅' : '📤'} ${rec.status}
+              ${rec.status === 'Pending' ? '⏳' : rec.status === 'Completed' ? '✅' : rec.status === 'Received' ? '📥' : '📤'} ${rec.status}
             </span>
           </td>
           <td>
-            <button class="btn btn-secondary" onclick="viewRecommendation('${rec.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-              View Details
-            </button>
+            ${rec.status === 'Pending' ? 
+              '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>' :
+              rec.status === 'Completed' && rec.fileUrl ? 
+                `<a href="${rec.fileUrl}" class="btn btn-secondary" download style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                  <span class="material-icons" style="font-size: 16px;">download</span>
+                  Download ${rec.fileType || 'File'}
+                </a>` :
+                `<button class="btn btn-secondary" onclick="viewRecommendation('${rec.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  View Details
+                </button>`
+            }
           </td>
         `;
         tbody.appendChild(row);
@@ -534,6 +861,104 @@
       updateRecommendationsTable: updateRecommendationsTable,
       showNotification: showNotification
     };
+  </script>
+  
+  <!-- StellarRec External ID Integration Script -->
+  <script>
+    (async function(){
+      const elStatus = document.getElementById('sr-status') || (function(){
+        const box = document.createElement('div');
+        box.id = 'sr-status';
+        box.style = 'margin:12px 0; padding:12px; border-radius:10px; background:#f1f5f9; color:#0f172a;';
+        const mount = document.querySelector('#recommendations') || document.querySelector('.main-content') || document.body;
+        mount.prepend(box);
+        return box;
+      })();
+
+      function uiPending(name){
+        elStatus.style.background = '#fff7ed';
+        elStatus.style.color = '#7c2d12';
+        elStatus.innerHTML = `<b>${name || 'Recommender'}</b> • <em>Pending</em> • waiting for response`;
+      }
+      function uiCompleted(name, fileUrl){
+        elStatus.style.background = '#ecfdf5';
+        elStatus.style.color = '#064e3b';
+        elStatus.innerHTML = `
+          <b>${name || 'Recommender'}</b> • <em>Completed</em>
+          ${fileUrl ? `• <a href="${fileUrl}" target="_blank" rel="noopener">Download file</a>` : ''}
+        `;
+      }
+      function uiNone(){ elStatus.textContent = 'No recommendation found yet for this external_id.'; }
+
+      const params = new URLSearchParams(location.search);
+      const externalId = params.get('external_id');
+      if (!externalId) { elStatus.textContent = 'Missing ?external_id=...'; return; }
+
+      async function fetchReco(){
+        const res = await fetch('/api/get-reco?external_id=' + encodeURIComponent(externalId), { cache: 'no-store' });
+        if (res.status === 204) return null;
+        if (!res.ok) throw new Error('get-reco failed ' + res.status);
+        return res.json();
+      }
+
+      async function paint(){
+        const data = await fetchReco().catch(()=>null);
+        if (!data) { uiNone(); return; }
+
+        // expected shape from save-reco
+        const name = data.recommender_name || data.recommender || 'Recommender';
+        if ((data.status || '').toLowerCase() === 'completed') {
+          uiCompleted(name, data.file_url || data.pdf_url || data.txt_url || data.mov_url);
+        } else {
+          uiPending(name);
+        }
+      }
+
+      // initial + poll
+      await paint();
+      setInterval(paint, 4000);
+    })();
+  </script>
+
+  <script>
+    (async function(){
+      const box = document.getElementById('sr-status') || (function(){
+        const el = document.createElement('div');
+        el.id = 'sr-status';
+        el.style = 'margin:12px 0; padding:12px; border-radius:10px; background:#f1f5f9; color:#0f172a;';
+        (document.querySelector('#recommendations') || document.body).prepend(el);
+        return el;
+      })();
+
+      const id = new URLSearchParams(location.search).get('external_id');
+      if (!id) { box.textContent = 'Missing ?external_id=...'; return; }
+
+      function viewPending(name){
+        box.style.background = '#fff7ed'; box.style.color = '#7c2d12';
+        box.innerHTML = `<b>${name||'Recommender'}</b> • <em>Pending</em> • waiting for response`;
+      }
+      function viewDone(name, url){
+        box.style.background = '#ecfdf5'; box.style.color = '#064e3b';
+        box.innerHTML = `<b>${name||'Recommender'}</b> • <em>Completed</em>${url?` • <a href="${url}" target="_blank" rel="noopener">Download file</a>`:''}`;
+      }
+      function viewNone(){ box.textContent = 'No recommendation found yet for this external_id.'; }
+
+      async function fetchReco(){
+        const r = await fetch('/api/get-reco?external_id='+encodeURIComponent(id), { cache:'no-store' });
+        if (r.status === 204) return null;
+        if (!r.ok) throw new Error('get-reco '+r.status);
+        return r.json();
+      }
+      async function paint(){
+        const data = await fetchReco().catch(()=>null);
+        if (!data) { viewNone(); return; }
+        const name = data.recommender_name || 'Recommender';
+        if ((data.status||'').toLowerCase() === 'completed') viewDone(name, data.file_url);
+        else viewPending(name);
+      }
+      await paint();
+      setInterval(paint, 4000);
+    })();
   </script>
 </body>
 </html>
