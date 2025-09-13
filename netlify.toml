@@ -2,9 +2,6 @@
   # The directory to publish (current directory)
   publish = "."
   
-  # Build command for static site
-  command = "npm run build"
-  
   # Functions directory
   functions = "netlify/functions"
 
