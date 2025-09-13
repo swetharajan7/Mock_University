@@ -35,6 +35,9 @@
   "bugs": {
     "url": "https://github.com/swetharajan7/MockUniversity/issues"
   },
+  "dependencies": {
+    "@netlify/blobs": "^6.1.0"
+  },
   "devDependencies": {
     "serve": "^14.2.1",
     "netlify-cli": "^17.0.0"

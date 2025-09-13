@@ -361,6 +361,21 @@
               No recommenders yet
             </td>
           </tr>
+          <!-- Live recommendation row will be populated by JavaScript -->
+          <tr id="liveRecommendationRow" style="display: none;">
+            <td>
+              <div style="font-weight: 600;"><span data-reco-name>—</span></div>
+              <div style="font-size: 0.85rem; color: var(--muted);" data-reco-email>—</div>
+            </td>
+            <td>
+              <span class="status-badge" data-reco-status-badge>
+                <span data-reco-status>PENDING</span>
+              </span>
+            </td>
+            <td>
+              <span data-reco-action>Pending</span>
+            </td>
+          </tr>
         </tbody>
       </table>
       
@@ -390,6 +405,99 @@
   
   <!-- StellarRec Integration Script -->
   <script src="js/stellarrec-integration.js"></script>
+  
+  <!-- Live Status Tracking Script -->
+  <script>
+    (async function(){
+      // 1) Read external_id from URL (StellarRec will include it)
+      const params = new URLSearchParams(location.search);
+      const externalId = params.get('external_id');
+      if (!externalId) return; // page can still load without it
+
+      // 2) UI helpers
+      const rowName = document.querySelector('[data-reco-name]');
+      const rowEmail = document.querySelector('[data-reco-email]');
+      const rowStatus = document.querySelector('[data-reco-status]');
+      const rowStatusBadge = document.querySelector('[data-reco-status-badge]');
+      const rowAction = document.querySelector('[data-reco-action]');
+      const liveRow = document.getElementById('liveRecommendationRow');
+      const noRecoRow = document.getElementById('noRecommendersRow');
+
+      function render(rec){
+        // Show the live row and hide "no recommenders"
+        if (liveRow) liveRow.style.display = 'table-row';
+        if (noRecoRow) noRecoRow.style.display = 'none';
+
+        if (rowName) rowName.textContent = rec.recommender_name || '—';
+        if (rowEmail) rowEmail.textContent = rec.recommender_email || '—';
+        if (rowStatus) rowStatus.textContent = (rec.status || 'pending').toUpperCase();
+        
+        // Update status badge styling
+        if (rowStatusBadge) {
+          rowStatusBadge.className = 'status-badge';
+          const status = rec.status || 'pending';
+          if (status === 'pending') {
+            rowStatusBadge.classList.add('status-pending');
+            rowStatus.innerHTML = '⏳ PENDING';
+          } else if (status === 'completed') {
+            rowStatusBadge.classList.add('status-completed');
+            rowStatus.innerHTML = '✅ COMPLETED';
+          } else if (status === 'sent') {
+            rowStatusBadge.classList.add('status-received');
+            rowStatus.innerHTML = '📤 SENT';
+          }
+        }
+
+        if (rowAction){
+          rowAction.innerHTML = '';
+          if (rec.status === 'completed' && rec.artifact_url){
+            const a = document.createElement('a');
+            a.href = rec.artifact_url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.className = 'btn btn-secondary';
+            a.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;';
+            a.innerHTML = '<span class="material-icons" style="font-size: 16px;">download</span> Download';
+            rowAction.appendChild(a);
+          } else {
+            rowAction.innerHTML = '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>';
+          }
+        }
+      }
+
+      async function poll(){
+        try{
+          const res = await fetch(`/.netlify/functions/reco-status?external_id=${encodeURIComponent(externalId)}`, { cache:'no-store' });
+          if (res.ok){
+            const rec = await res.json();
+            render(rec);
+          }
+        }catch(e){
+          console.log('Polling error:', e);
+        }
+        setTimeout(poll, 2500); // lightweight live update every 2.5 seconds
+      }
+
+      // Start polling
+      poll();
+      
+      // Also show integration status
+      const stellarrecStatus = document.getElementById('stellarrecStatus');
+      if (stellarrecStatus) {
+        stellarrecStatus.style.display = 'block';
+        stellarrecStatus.innerHTML = `
+          <h4 style="color: var(--brand-1); margin-bottom: 0.5rem;">
+            <span class="material-icons" style="font-size: 18px; vertical-align: middle;">link</span>
+            StellarRec Integration Active
+          </h4>
+          <p style="color: var(--muted); font-size: 0.9rem;">
+            Live tracking recommendation ID: <code>${externalId}</code><br>
+            Status updates automatically every 2.5 seconds.
+          </p>
+        `;
+      }
+    })();
+  </script>
   
   <script>
     // Application functionality

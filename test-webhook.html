@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test StellarRec Webhook - MockUniversity</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .btn-success {
+      background: #4caf50;
+    }
+    
+    .btn-success:hover {
+      background: #45a049;
+    }
+    
+    .status {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .status.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .status.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .status.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+    
+    .log {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+    
+    .external-id {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+    
+    .external-id code {
+      background: #f8f9fa;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔗 Test StellarRec → MockUniversity Integration</h1>
+    <p>This page simulates the webhook calls that StellarRec will make to MockUniversity.</p>
+    
+    <div class="external-id">
+      <strong>🔑 Test External ID:</strong> <code id="externalId">reco_test_123456</code>
+      <button onclick="generateNewId()">Generate New ID</button>
+    </div>
+    
+    <div class="test-section">
+      <h3>📨 Step 1: Send Recommendation Request (Pending)</h3>
+      <p>Simulates when StellarRec sends initial recommendation request to MockUniversity.</p>
+      <button onclick="sendPendingRequest()">Send Pending Request</button>
+      <div id="pendingResult" class="status" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>✅ Step 2: Complete Recommendation</h3>
+      <p>Simulates when recommender completes the recommendation with file.</p>
+      <button onclick="sendCompletedRecommendation()" class="btn-success">Complete Recommendation</button>
+      <div id="completedResult" class="status" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔄 Step 3: Test Apply Page</h3>
+      <p>Open the apply page with the external_id to see live updates.</p>
+      <button onclick="openApplyPage()">Open Apply Page with Live Tracking</button>
+      <div id="applyResult" class="status" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📊 Check Status</h3>
+      <button onclick="checkStatus()">Check Current Status</button>
+      <div id="statusResult" class="status" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📋 Activity Log</h3>
+      <button onclick="clearLogs()">Clear Logs</button>
+      <div id="activityLog" class="log">Webhook test page loaded...\n</div>
+    </div>
+  </div>
+  
+  <script>
+    let logElement;
+    let currentExternalId = 'reco_test_123456';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      logElement = document.getElementById('activityLog');
+      log('Webhook test page initialized');
+      updateExternalIdDisplay();
+    });
+    
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      logElement.textContent += `[${timestamp}] ${message}\n`;
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    function generateNewId() {
+      currentExternalId = 'reco_test_' + Date.now();
+      updateExternalIdDisplay();
+      log(`Generated new external ID: ${currentExternalId}`);
+    }
+    
+    function updateExternalIdDisplay() {
+      document.getElementById('externalId').textContent = currentExternalId;
+    }
+    
+    async function sendPendingRequest() {
+      const result = document.getElementById('pendingResult');
+      
+      const requestData = {
+        external_id: currentExternalId,
+        student_name: 'Student Applicant',
+        student_email: 'swetha.rajan103@gmail.com',
+        recommender_name: 'Prof. Manas Mohan Nand',
+        recommender_email: 'manasnandmohan@gmail.com',
+        universities: [
+          { unitid: 'mock_univ_001', name: 'MockUniversity' }
+        ],
+        status: 'pending',
+        artifact_url: '',
+        ts: Date.now()
+      };
+      
+      try {
+        log('Sending pending request webhook...');
+        
+        const response = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        const responseData = await response.json();
+        
+        if (response.ok) {
+          result.className = 'status success';
+          result.textContent = `✅ Pending request sent successfully! External ID: ${currentExternalId}`;
+          log(`SUCCESS: Pending request created for ${requestData.recommender_name}`);
+        } else {
+          throw new Error(responseData.message || 'Request failed');
+        }
+        
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = `❌ Error: ${error.message}`;
+        log(`ERROR: ${error.message}`);
+      }
+      
+      result.style.display = 'block';
+    }
+    
+    async function sendCompletedRecommendation() {
+      const result = document.getElementById('completedResult');
+      
+      const completedData = {
+        external_id: currentExternalId,
+        student_name: 'Student Applicant',
+        student_email: 'swetha.rajan103@gmail.com',
+        recommender_name: 'Prof. Manas Mohan Nand',
+        recommender_email: 'manasnandmohan@gmail.com',
+        universities: [
+          { unitid: 'mock_univ_001', name: 'MockUniversity' }
+        ],
+        status: 'completed',
+        artifact_url: 'https://example.com/recommendations/sample-recommendation.pdf',
+        ts: Date.now()
+      };
+      
+      try {
+        log('Sending completed recommendation webhook...');
+        
+        const response = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(completedData)
+        });
+        
+        const responseData = await response.json();
+        
+        if (response.ok) {
+          result.className = 'status success';
+          result.textContent = `✅ Recommendation completed! File available for download.`;
+          log(`SUCCESS: Recommendation completed with file: ${completedData.artifact_url}`);
+        } else {
+          throw new Error(responseData.message || 'Request failed');
+        }
+        
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = `❌ Error: ${error.message}`;
+        log(`ERROR: ${error.message}`);
+      }
+      
+      result.style.display = 'block';
+    }
+    
+    function openApplyPage() {
+      const applyUrl = `apply.html?external_id=${encodeURIComponent(currentExternalId)}`;
+      const applyWindow = window.open(applyUrl, 'mockUniversityApply', 'width=1200,height=800');
+      
+      const result = document.getElementById('applyResult');
+      
+      if (applyWindow) {
+        result.className = 'status info';
+        result.textContent = `📱 Apply page opened with external_id: ${currentExternalId}`;
+        log(`Opened apply page with external_id: ${currentExternalId}`);
+      } else {
+        result.className = 'status error';
+        result.textContent = '❌ Failed to open apply page (popup blocked?)';
+        log('Failed to open apply page (popup blocked?)');
+      }
+      
+      result.style.display = 'block';
+    }
+    
+    async function checkStatus() {
+      const result = document.getElementById('statusResult');
+      
+      try {
+        log('Checking current status...');
+        
+        const response = await fetch(`/.netlify/functions/reco-status?external_id=${encodeURIComponent(currentExternalId)}`);
+        
+        if (response.ok) {
+          const statusData = await response.json();
+          result.className = 'status success';
+          result.innerHTML = `
+            <strong>📊 Current Status:</strong><br>
+            External ID: ${statusData.external_id}<br>
+            Recommender: ${statusData.recommender_name}<br>
+            Status: ${statusData.status?.toUpperCase()}<br>
+            ${statusData.artifact_url ? `File: <a href="${statusData.artifact_url}" target="_blank">Download</a><br>` : ''}
+            Updated: ${new Date(statusData.updated_at).toLocaleString()}
+          `;
+          log(`Status check: ${statusData.status} for ${statusData.recommender_name}`);
+        } else if (response.status === 404) {
+          result.className = 'status info';
+          result.textContent = `📭 No recommendation found for external_id: ${currentExternalId}`;
+          log(`No recommendation found for external_id: ${currentExternalId}`);
+        } else {
+          throw new Error('Status check failed');
+        }
+        
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = `❌ Error checking status: ${error.message}`;
+        log(`ERROR checking status: ${error.message}`);
+      }
+      
+      result.style.display = 'block';
+    }
+    
+    function clearLogs() {
+      logElement.textContent = 'Logs cleared...\n';
+    }
+  </script>
+</body>
+</html>

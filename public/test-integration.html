@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,31 +13,31 @@
       padding: 2rem;
       background: #f5f5f5;
     }
-    
+
     .container {
       background: white;
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
-    
+
     h1 {
       color: #1976d2;
       margin-bottom: 1rem;
     }
-    
+
     .test-section {
       margin: 2rem 0;
       padding: 1.5rem;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
     }
-    
+
     .test-section h3 {
       color: #333;
       margin-bottom: 1rem;
     }
-    
+
     button {
       background: #1976d2;
       color: white;
@@ -47,11 +48,11 @@
       margin: 0.5rem 0.5rem 0.5rem 0;
       font-size: 0.9rem;
     }
-    
+
     button:hover {
       background: #1565c0;
     }
-    
+
     .status {
       margin: 1rem 0;
       padding: 1rem;
@@ -59,25 +60,25 @@
       font-family: monospace;
       font-size: 0.9rem;
     }
-    
+
     .status.success {
       background: #e8f5e8;
       border: 1px solid #4caf50;
       color: #2e7d32;
     }
-    
+
     .status.error {
       background: #ffeaea;
       border: 1px solid #f44336;
       color: #c62828;
     }
-    
+
     .status.info {
       background: #e3f2fd;
       border: 1px solid #2196f3;
       color: #1565c0;
     }
-    
+
     .log {
       background: #f5f5f5;
       border: 1px solid #ddd;
@@ -89,43 +90,44 @@
       font-size: 0.85rem;
       white-space: pre-wrap;
     }
-    
+
     .integration-status {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin: 1rem 0;
     }
-    
+
     .status-indicator {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       background: #ccc;
     }
-    
+
     .status-indicator.active {
       background: #4caf50;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🎓 StellarRec Integration Test</h1>
     <p>This page tests the integration between StellarRec and MockUniversity's application system.</p>
-    
+
     <div class="integration-status">
       <span class="status-indicator" id="integrationIndicator"></span>
       <span id="integrationStatus">Checking integration status...</span>
     </div>
-    
+
     <div class="test-section">
       <h3>🔧 Integration Status</h3>
       <button onclick="checkIntegration()">Check Integration</button>
       <button onclick="clearLogs()">Clear Logs</button>
       <div id="integrationResult" class="status info" style="display: none;"></div>
     </div>
-    
+
     <div class="test-section">
       <h3>📨 Test Recommendation Sending</h3>
       <p>Simulate sending a recommendation from StellarRec to MockUniversity:</p>
@@ -133,7 +135,7 @@
       <button onclick="sendMultipleRecommendations()">Send Multiple (3)</button>
       <div id="sendResult" class="status" style="display: none;"></div>
     </div>
-    
+
     <div class="test-section">
       <h3>🔄 Test Message Communication</h3>
       <p>Test the postMessage communication between StellarRec and MockUniversity:</p>
@@ -141,29 +143,29 @@
       <button onclick="openApplyPage()">Open Apply Page</button>
       <div id="messageResult" class="status" style="display: none;"></div>
     </div>
-    
+
     <div class="test-section">
       <h3>💾 Local Storage</h3>
       <button onclick="viewStoredRecommendations()">View Stored Recommendations</button>
       <button onclick="clearStoredRecommendations()">Clear Storage</button>
       <div id="storageResult" class="status" style="display: none;"></div>
     </div>
-    
+
     <div class="test-section">
       <h3>📋 Activity Log</h3>
       <div id="activityLog" class="log">Integration test page loaded...\n</div>
     </div>
   </div>
-  
+
   <script src="stellarrec-integration.js"></script>
-  
+
   <script>
     let logElement;
-    
-    document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function () {
       logElement = document.getElementById('activityLog');
       log('Test page initialized');
-      
+
       // Initialize integration
       if (window.StellarRecIntegration) {
         window.StellarRecIntegration.initialize();
@@ -173,23 +175,23 @@
         updateIntegrationStatus(false);
         log('ERROR: StellarRec integration not found');
       }
-      
+
       // Listen for messages
-      window.addEventListener('message', function(event) {
+      window.addEventListener('message', function (event) {
         log(`Message received from ${event.origin}: ${JSON.stringify(event.data)}`);
       });
     });
-    
+
     function log(message) {
       const timestamp = new Date().toLocaleTimeString();
       logElement.textContent += `[${timestamp}] ${message}\n`;
       logElement.scrollTop = logElement.scrollHeight;
     }
-    
+
     function updateIntegrationStatus(active) {
       const indicator = document.getElementById('integrationIndicator');
       const status = document.getElementById('integrationStatus');
-      
+
       if (active) {
         indicator.classList.add('active');
         status.textContent = 'Integration Active ✅';
@@ -198,10 +200,10 @@
         status.textContent = 'Integration Inactive ❌';
       }
     }
-    
+
     function checkIntegration() {
       const result = document.getElementById('integrationResult');
-      
+
       if (window.StellarRecIntegration) {
         const recommendations = window.StellarRecIntegration.getRecommendations();
         result.className = 'status success';
@@ -212,20 +214,20 @@
         result.textContent = 'Integration not found or not initialized.';
         log('Integration check: FAILED');
       }
-      
+
       result.style.display = 'block';
     }
-    
+
     function sendTestRecommendation() {
       const result = document.getElementById('sendResult');
-      
+
       if (!window.StellarRecIntegration) {
         result.className = 'status error';
         result.textContent = 'Integration not available';
         result.style.display = 'block';
         return;
       }
-      
+
       const testRecommendation = {
         id: 'test_' + Date.now(),
         recommenderName: 'Dr. Sarah Johnson',
@@ -239,24 +241,24 @@
         submittedAt: new Date().toISOString(),
         source: 'StellarRec (Test)'
       };
-      
+
       // Simulate the message from StellarRec
       const message = {
         type: 'RECOMMENDATION_SENT',
         recommendation: testRecommendation,
         messageId: 'test_msg_' + Date.now()
       };
-      
+
       // Send the message
       window.postMessage(message, window.location.origin);
-      
+
       result.className = 'status success';
       result.textContent = `Test recommendation sent for ${testRecommendation.studentName}`;
       result.style.display = 'block';
-      
+
       log(`Sent test recommendation: ${testRecommendation.recommenderName} -> ${testRecommendation.studentName}`);
     }
-    
+
     function sendMultipleRecommendations() {
       const recommendations = [
         {
@@ -281,7 +283,7 @@
           program: 'Biotechnology'
         }
       ];
-      
+
       recommendations.forEach((rec, index) => {
         setTimeout(() => {
           const testRec = {
@@ -293,49 +295,49 @@
             submittedAt: new Date().toISOString(),
             source: 'StellarRec (Multi-Test)'
           };
-          
+
           const message = {
             type: 'RECOMMENDATION_SENT',
             recommendation: testRec,
             messageId: 'multi_msg_' + Date.now() + '_' + index
           };
-          
+
           window.postMessage(message, window.location.origin);
           log(`Sent recommendation ${index + 1}/3: ${rec.recommenderName} -> ${rec.studentName}`);
         }, index * 500);
       });
-      
+
       const result = document.getElementById('sendResult');
       result.className = 'status success';
       result.textContent = 'Sending 3 test recommendations...';
       result.style.display = 'block';
     }
-    
+
     function testPostMessage() {
       const result = document.getElementById('messageResult');
-      
+
       // Test ping message
       const pingMessage = {
         type: 'PING',
         timestamp: new Date().toISOString(),
         source: 'test-page'
       };
-      
+
       window.postMessage(pingMessage, window.location.origin);
-      
+
       result.className = 'status info';
       result.textContent = 'Ping message sent. Check activity log for response.';
       result.style.display = 'block';
-      
+
       log('Sent ping message');
     }
-    
+
     function openApplyPage() {
       const applyWindow = window.open('/public/apply.html', 'mockUniversityApply', 'width=1200,height=800');
-      
+
       if (applyWindow) {
         log('Opened apply page in new window');
-        
+
         // Send a test message after a delay
         setTimeout(() => {
           const testMessage = {
@@ -355,7 +357,7 @@
             },
             messageId: 'window_msg_' + Date.now()
           };
-          
+
           applyWindow.postMessage(testMessage, window.location.origin);
           log('Sent test recommendation to apply page window');
         }, 2000);
@@ -363,11 +365,11 @@
         log('Failed to open apply page (popup blocked?)');
       }
     }
-    
+
     function viewStoredRecommendations() {
       const result = document.getElementById('storageResult');
       const stored = JSON.parse(localStorage.getItem('mockUniversityRecommendations') || '[]');
-      
+
       if (stored.length === 0) {
         result.className = 'status info';
         result.textContent = 'No recommendations stored.';
@@ -376,28 +378,28 @@
         result.innerHTML = `<strong>${stored.length} recommendations stored:</strong><br>` +
           stored.map(r => `• ${r.recommenderName} → ${r.studentName} (${r.status})`).join('<br>');
       }
-      
+
       result.style.display = 'block';
       log(`Viewed storage: ${stored.length} recommendations found`);
     }
-    
+
     function clearStoredRecommendations() {
       localStorage.removeItem('mockUniversityRecommendations');
-      
+
       const result = document.getElementById('storageResult');
       result.className = 'status info';
       result.textContent = 'Storage cleared.';
       result.style.display = 'block';
-      
+
       log('Cleared stored recommendations');
     }
-    
+
     function clearLogs() {
       logElement.textContent = 'Logs cleared...\n';
     }
-    
+
     // Global test function
-    window.testStellarRecIntegration = function() {
+    window.testStellarRecIntegration = function () {
       log('Running full integration test...');
       checkIntegration();
       setTimeout(() => sendTestRecommendation(), 1000);
@@ -405,4 +407,5 @@
     };
   </script>
 </body>
+
 </html>

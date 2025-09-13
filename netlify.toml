@@ -1,6 +1,7 @@
+# netlify.toml
 [build]
-  publish = "."
-  functions = "netlify/functions"
+  command = ""        # No build step
+  publish = "public"  # Publish the /public folder
 
 [[redirects]]
   from = "/*"
