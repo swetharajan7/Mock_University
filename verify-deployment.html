@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔍 Deployment Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .check-item {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .status.checking {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 1rem 0;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Deployment Verification</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Check if all functions and routes are properly deployed
+    </p>
+    
+    <div class="check-item">
+      <span>📤 /api/save-reco function</span>
+      <span id="save-reco-status" class="status checking">Checking...</span>
+    </div>
+    
+    <div class="check-item">
+      <span>📥 /api/get-reco function</span>
+      <span id="get-reco-status" class="status checking">Checking...</span>
+    </div>
+    
+    <div class="check-item">
+      <span>📄 Mock PDF file</span>
+      <span id="pdf-status" class="status checking">Checking...</span>
+    </div>
+    
+    <div class="check-item">
+      <span>🎥 Mock Video file</span>
+      <span id="video-status" class="status checking">Checking...</span>
+    </div>
+    
+    <div class="check-item">
+      <span>📱 Apply page</span>
+      <span id="apply-status" class="status checking">Checking...</span>
+    </div>
+    
+    <button onclick="runAllChecks()">🔄 Run All Checks</button>
+    
+    <div id="summary" class="result info" style="display: none;"></div>
+  </div>
+  
+  <script>
+    async function checkEndpoint(url, method = 'GET', body = null) {
+      try {
+        const options = {
+          method,
+          headers: method === 'POST' ? { 'Content-Type': 'application/json' } : {}
+        };
+        if (body) options.body = JSON.stringify(body);
+        
+        const response = await fetch(url, options);
+        return {
+          success: true,
+          status: response.status,
+          ok: response.ok,
+          url
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error.message,
+          url
+        };
+      }
+    }
+    
+    function updateStatus(elementId, success, message) {
+      const element = document.getElementById(elementId);
+      element.className = `status ${success ? 'success' : 'error'}`;
+      element.textContent = message;
+    }
+    
+    async function runAllChecks() {
+      const results = [];
+      
+      // Check save-reco function
+      updateStatus('save-reco-status', null, 'Checking...');
+      const saveRecoResult = await checkEndpoint('/api/save-reco', 'POST', {
+        external_id: 'test_deployment_check',
+        recommender_name: 'Test',
+        status: 'Pending'
+      });
+      
+      if (saveRecoResult.success && saveRecoResult.ok) {
+        updateStatus('save-reco-status', true, '✅ Working');
+        results.push('✅ save-reco function: Working');
+      } else {
+        updateStatus('save-reco-status', false, `❌ ${saveRecoResult.status || 'Error'}`);
+        results.push(`❌ save-reco function: ${saveRecoResult.error || saveRecoResult.status}`);
+      }
+      
+      // Check get-reco function
+      updateStatus('get-reco-status', null, 'Checking...');
+      const getRecoResult = await checkEndpoint('/api/get-reco?external_id=test_deployment_check');
+      
+      if (getRecoResult.success) {
+        updateStatus('get-reco-status', true, '✅ Working');
+        results.push('✅ get-reco function: Working');
+      } else {
+        updateStatus('get-reco-status', false, `❌ ${getRecoResult.status || 'Error'}`);
+        results.push(`❌ get-reco function: ${getRecoResult.error || getRecoResult.status}`);
+      }
+      
+      // Check PDF file
+      updateStatus('pdf-status', null, 'Checking...');
+      const pdfResult = await checkEndpoint('/assets/mock/reco-demo.pdf');
+      
+      if (pdfResult.success && pdfResult.ok) {
+        updateStatus('pdf-status', true, '✅ Available');
+        results.push('✅ PDF file: Available');
+      } else {
+        updateStatus('pdf-status', false, `❌ ${pdfResult.status || 'Error'}`);
+        results.push(`❌ PDF file: ${pdfResult.error || pdfResult.status}`);
+      }
+      
+      // Check Video file
+      updateStatus('video-status', null, 'Checking...');
+      const videoResult = await checkEndpoint('/assets/mock/reco-video.mov');
+      
+      if (videoResult.success && videoResult.ok) {
+        updateStatus('video-status', true, '✅ Available');
+        results.push('✅ Video file: Available');
+      } else {
+        updateStatus('video-status', false, `❌ ${videoResult.status || 'Error'}`);
+        results.push(`❌ Video file: ${videoResult.error || videoResult.status}`);
+      }
+      
+      // Check Apply page
+      updateStatus('apply-status', null, 'Checking...');
+      const applyResult = await checkEndpoint('/apply.html');
+      
+      if (applyResult.success && applyResult.ok) {
+        updateStatus('apply-status', true, '✅ Available');
+        results.push('✅ Apply page: Available');
+      } else {
+        updateStatus('apply-status', false, `❌ ${applyResult.status || 'Error'}`);
+        results.push(`❌ Apply page: ${applyResult.error || applyResult.status}`);
+      }
+      
+      // Show summary
+      const summary = document.getElementById('summary');
+      summary.textContent = `🔍 Deployment Check Results:
+
+${results.join('\\n')}
+
+${results.filter(r => r.startsWith('✅')).length}/${results.length} checks passed
+
+${results.every(r => r.startsWith('✅')) ? 
+  '🎉 All systems ready! You can proceed with testing.' : 
+  '⚠️ Some issues found. Check the failed items above.'}`;
+      summary.style.display = 'block';
+    }
+    
+    // Auto-run checks on page load
+    document.addEventListener('DOMContentLoaded', runAllChecks);
+  </script>
+</body>
+</html>

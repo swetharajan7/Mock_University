@@ -937,9 +937,21 @@
         box.style.background = '#fff7ed'; box.style.color = '#7c2d12';
         box.innerHTML = `<b>${name||'Recommender'}</b> • <em>Pending</em> • waiting for response`;
       }
-      function viewDone(name, url){
+      function viewDone(name, data){
         box.style.background = '#ecfdf5'; box.style.color = '#064e3b';
-        box.innerHTML = `<b>${name||'Recommender'}</b> • <em>Completed</em>${url?` • <a href="${url}" target="_blank" rel="noopener">Download file</a>`:''}`;
+        
+        let fileLinks = '';
+        if (data.pdf_url) {
+          fileLinks += ` • <a href="${data.pdf_url}" target="_blank" rel="noopener" style="margin-right:0.5rem;">📄 PDF</a>`;
+        }
+        if (data.mov_url) {
+          fileLinks += ` • <a href="${data.mov_url}" target="_blank" rel="noopener" style="margin-right:0.5rem;">🎥 Video</a>`;
+        }
+        if (data.letter_content) {
+          fileLinks += ` • <a href="#" onclick="showLetterModal('${data.external_id}'); return false;" style="margin-right:0.5rem;">📝 Letter</a>`;
+        }
+        
+        box.innerHTML = `<b>${name||'Recommender'}</b> • <em>Completed</em>${fileLinks}`;
       }
       function viewNone(){ box.textContent = 'No recommendation found yet for this external_id.'; }
 
@@ -951,11 +963,214 @@
       }
       async function paint(){
         const data = await fetchReco().catch(()=>null);
-        if (!data) { viewNone(); return; }
+        if (!data) { 
+          viewNone(); 
+          // Also hide the center table row
+          const liveRow = document.getElementById('liveRecommendationRow');
+          const noRecoRow = document.getElementById('noRecommendersRow');
+          if (liveRow) liveRow.style.display = 'none';
+          if (noRecoRow) noRecoRow.style.display = 'table-row';
+          return; 
+        }
+        
         const name = data.recommender_name || 'Recommender';
-        if ((data.status||'').toLowerCase() === 'completed') viewDone(name, data.file_url);
+        const email = data.recommender_email || '';
+        const status = (data.status || '').toLowerCase();
+        
+        // Update top status box
+        if (status === 'completed') viewDone(name, data);
         else viewPending(name);
+        
+        // Also update the center table
+        updateCenterTable(name, email, status, data);
       }
+      
+      function updateCenterTable(name, email, status, data) {
+        const liveRow = document.getElementById('liveRecommendationRow');
+        const noRecoRow = document.getElementById('noRecommendersRow');
+        const nameSpan = document.querySelector('[data-reco-name]');
+        const emailSpan = document.querySelector('[data-reco-email]');
+        const statusSpan = document.querySelector('[data-reco-status]');
+        const statusBadge = document.querySelector('[data-reco-status-badge]');
+        const actionSpan = document.querySelector('[data-reco-action]');
+        
+        // Show live row, hide "no recommenders"
+        if (liveRow) liveRow.style.display = 'table-row';
+        if (noRecoRow) noRecoRow.style.display = 'none';
+        
+        // Update name and email
+        if (nameSpan) nameSpan.textContent = name;
+        if (emailSpan) emailSpan.textContent = email;
+        
+        // Update status
+        if (statusSpan && statusBadge) {
+          statusBadge.className = 'status-badge';
+          if (status === 'completed') {
+            statusBadge.classList.add('status-completed');
+            statusSpan.innerHTML = '✅ COMPLETED';
+          } else {
+            statusBadge.classList.add('status-pending');
+            statusSpan.innerHTML = '⏳ PENDING';
+          }
+        }
+        
+        // Update actions with multiple file types
+        if (actionSpan) {
+          if (status === 'completed') {
+            let actions = '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">';
+            
+            if (data.pdf_url) {
+              actions += `<a href="${data.pdf_url}" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">picture_as_pdf</span>
+                PDF
+              </a>`;
+            }
+            
+            if (data.mov_url) {
+              actions += `<a href="${data.mov_url}" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">videocam</span>
+                Video
+              </a>`;
+            }
+            
+            if (data.letter_content) {
+              actions += `<button onclick="showLetterModal('${data.external_id}')" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                <span class="material-icons" style="font-size: 16px;">description</span>
+                Letter
+              </button>`;
+            }
+            
+            actions += '</div>';
+            actionSpan.innerHTML = actions;
+          } else {
+            actionSpan.innerHTML = '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>';
+          }
+        }
+      }
+      
+      // Store current data for modal access
+      window.currentRecommendationData = null;
+      
+      // Letter modal functionality
+      window.showLetterModal = function(externalId) {
+        const data = window.currentRecommendationData;
+        if (!data || !data.letter_content) {
+          alert('Letter content not available.');
+          return;
+        }
+        
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'letter-modal-overlay';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 2rem;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'letter-modal-content';
+        modalContent.style.cssText = `
+          background: white;
+          border-radius: 16px;
+          padding: 2rem;
+          max-width: 700px;
+          width: 100%;
+          max-height: 80vh;
+          overflow-y: auto;
+          position: relative;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        `;
+        
+        modalContent.innerHTML = `
+          <button onclick="closeLetterModal()" style="
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">&times;</button>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="color: var(--brand-1); margin-bottom: 0.5rem;">📝 Recommendation Letter</h2>
+            <div style="color: var(--muted); font-size: 0.9rem;">
+              <strong>From:</strong> ${data.recommender_name}<br>
+              <strong>Email:</strong> ${data.recommender_email || 'Not provided'}<br>
+              <strong>Date:</strong> ${new Date(data.updated_at || data.receivedAt || Date.now()).toLocaleDateString()}
+            </div>
+          </div>
+          
+          <div style="
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            min-height: 200px;
+          ">${data.letter_content}</div>
+          
+          <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+            ${data.pdf_url ? `
+              <a href="${data.pdf_url}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">picture_as_pdf</span>
+                Download PDF
+              </a>
+            ` : ''}
+            ${data.mov_url ? `
+              <a href="${data.mov_url}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">videocam</span>
+                Watch Video
+              </a>
+            ` : ''}
+            <button onclick="closeLetterModal()" class="btn btn-secondary">Close</button>
+          </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Close on overlay click
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeLetterModal();
+          }
+        });
+      };
+      
+      window.closeLetterModal = function() {
+        const modal = document.querySelector('.letter-modal-overlay');
+        if (modal) {
+          modal.remove();
+        }
+      };
+      
+      // Update paint function to store data
+      const originalPaint = paint;
+      paint = async function() {
+        const data = await fetchReco().catch(()=>null);
+        window.currentRecommendationData = data;
+        return originalPaint.call(this);
+      };
+      
       await paint();
       setInterval(paint, 4000);
     })();

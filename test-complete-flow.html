@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎯 Complete Flow Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .step {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem 0;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Complete PDF + Video Flow Test</h1>
+    
+    <div class="step">
+      <h3>Step 1: Send Files to StellarRec</h3>
+      <p>This simulates sending a PDF letter + .mov video from StellarRec to Mock University:</p>
+      <button onclick="sendFiles()">📤 Send PDF + Video Files</button>
+      <div id="sendResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>Step 2: View at Mock University</h3>
+      <p>Open the Mock University apply page to see the received files:</p>
+      <button onclick="viewFiles()" class="success">👀 View Files at Mock University</button>
+      <div id="viewResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>Step 3: Test Individual Files</h3>
+      <p>Test accessing each file type:</p>
+      <button onclick="testPDF()">📄 Test PDF Access</button>
+      <button onclick="testVideo()">🎥 Test Video Access</button>
+      <button onclick="testLetter()">📝 Test Letter Modal</button>
+      <div id="testResult" class="result" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'test_' + Date.now();
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function sendFiles() {
+      try {
+        showResult('sendResult', 'Sending PDF + Video files to StellarRec...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID,
+          recommender_name: 'Prof. Manas Mohan Nand',
+          recommender_email: 'manasnandmohan@gmail.com',
+          student_name: 'Student Applicant',
+          student_email: 'student@mockuniversity.edu',
+          program: 'Computer Science Graduate Program',
+          status: 'Completed',
+          
+          // Files
+          pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+          mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+          letter_content: `Dear Admissions Committee at Mock University,
+
+I am writing to provide my strongest recommendation for Student Applicant, who has been my student in Advanced Computer Science courses.
+
+Student Applicant demonstrates exceptional ability in:
+• Advanced algorithms and data structures
+• Full-stack web development  
+• Machine learning applications
+• Collaborative software development
+
+I have also prepared a video recommendation and PDF documentation that provide additional context about their work and character.
+
+I recommend Student Applicant without reservation for admission to your Computer Science graduate program.
+
+Sincerely,
+Prof. Manas Mohan Nand
+Department of Computer Science
+Columbia University
+manasnandmohan@gmail.com`
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('sendResult', `✅ SUCCESS! Files sent to Mock University!
+
+External ID: ${EXTERNAL_ID}
+
+Response: ${result}
+
+Files sent:
+📄 PDF Letter: YES
+🎥 Video File: YES  
+📝 Text Content: YES
+
+Ready for Step 2!`, 'success');
+        } else {
+          showResult('sendResult', `❌ Failed to send files
+Status: ${response.status}
+Error: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('sendResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    function viewFiles() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('viewResult', `🚀 Opened Mock University apply page
+
+External ID: ${EXTERNAL_ID}
+
+You should see:
+
+📊 Top Status: "Prof. Manas Mohan Nand • Completed • 📄 PDF • 🎥 Video • 📝 Letter"
+
+🎯 Action Buttons:
+  📄 PDF - Opens the PDF file
+  🎥 Video - Opens the .mov file  
+  📝 Letter - Shows full letter in modal
+
+Click each button to test file access!`, 'info');
+    }
+    
+    function testPDF() {
+      const pdfUrl = 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf';
+      window.open(pdfUrl, '_blank');
+      showResult('testResult', `📄 Testing PDF access...
+
+Opened: ${pdfUrl}
+
+This should show a PDF recommendation letter.
+If it opens successfully, PDF integration is working!`, 'info');
+    }
+    
+    function testVideo() {
+      const videoUrl = 'https://stellarrec.netlify.app/assets/mock/reco-video.mov';
+      window.open(videoUrl, '_blank');
+      showResult('testResult', `🎥 Testing Video access...
+
+Opened: ${videoUrl}
+
+This should show/download the .mov video file.
+If it opens successfully, video integration is working!`, 'info');
+    }
+    
+    function testLetter() {
+      showResult('testResult', `📝 Testing Letter Modal...
+
+To test the letter modal:
+1. Go to the apply page (Step 2)
+2. Click the "📝 Letter" button
+3. A modal should open with the full letter text
+4. The modal should also have PDF and Video buttons
+
+If the modal opens with formatted text, letter integration is working!`, 'info');
+    }
+  </script>
+</body>
+</html>

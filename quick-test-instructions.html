@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Quick Test Instructions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .container {
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .step {
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      border-left: 4px solid #1976d2;
+      background: #f8f9fa;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .step h3 {
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+    
+    .code {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+      overflow-x: auto;
+    }
+    
+    .expected {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 0.5rem 0;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 0.5rem 0;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin: 0.25rem;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .warning-btn {
+      background: #ff9800;
+    }
+    
+    .external-id {
+      background: #1976d2;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      display: inline-block;
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ Quick Test Instructions (2-3 mins)</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Follow these exact steps to test the PDF + Video integration
+    </p>
+    
+    <div class="external-id" id="externalIdDisplay">
+      External ID: <span id="externalIdValue">Will be generated...</span>
+    </div>
+    
+    <div class="step">
+      <h3>🎯 Step 1: Student → Pending</h3>
+      <p><strong>Action:</strong> Simulate student submitting a request</p>
+      
+      <button onclick="testPending()">📤 Send Pending Request</button>
+      
+      <div class="code">
+// This will call:
+fetch('/api/save-reco', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    external_id: 'sr_test_[timestamp]',
+    student_name: 'Test Student',
+    recommender_name: 'Prof. Test',
+    status: 'Pending'
+  })
+})
+      </div>
+      
+      <div class="expected">
+        <strong>Expected Console Output:</strong><br>
+        [SR] ✅ MockU pending saved ... <br>
+        External ID will be copied to clipboard
+      </div>
+      
+      <div id="pendingResult" style="display: none; margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>👀 Step 2: View Pending on MockU</h3>
+      <p><strong>Action:</strong> Check the apply page shows "Pending"</p>
+      
+      <button onclick="viewPending()" class="success">🔍 View Pending Status</button>
+      
+      <div class="expected">
+        <strong>Expected Result:</strong><br>
+        • Status shows "⏳ PENDING"<br>
+        • "Waiting for response" message<br>
+        • No file buttons yet
+      </div>
+      
+      <div id="viewPendingResult" style="display: none; margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>✅ Step 3: Recommender → Completed</h3>
+      <p><strong>Action:</strong> Simulate recommender sending files</p>
+      
+      <button onclick="testCompleted()">📝 Send Completed with Files</button>
+      
+      <div class="code">
+// This will call:
+fetch('/api/save-reco', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    external_id: '[SAME_ID_AS_STEP_1]',
+    status: 'Completed',
+    pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+    mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+    letter_content: 'Full recommendation letter text...'
+  })
+})
+      </div>
+      
+      <div class="expected">
+        <strong>Expected Console Output:</strong><br>
+        [SR] ✅ MockU completed saved ...<br>
+        Files received: PDF: YES, Video: YES, Letter: YES
+      </div>
+      
+      <div id="completedResult" style="display: none; margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>🎉 Step 4: View Completed on MockU</h3>
+      <p><strong>Action:</strong> Refresh the apply page to see files</p>
+      
+      <button onclick="viewCompleted()" class="success">🎯 View Completed Status</button>
+      
+      <div class="expected">
+        <strong>Expected Result:</strong><br>
+        • Status: "✅ COMPLETED • 📄 PDF • 🎥 Video • 📝 Letter"<br>
+        • Three action buttons:<br>
+        &nbsp;&nbsp;📄 PDF - Opens the PDF file<br>
+        &nbsp;&nbsp;🎥 Video - Opens the .mov file<br>
+        &nbsp;&nbsp;📝 Letter - Shows letter in modal
+      </div>
+      
+      <div id="viewCompletedResult" style="display: none; margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px;"></div>
+    </div>
+    
+    <div class="step">
+      <h3>🧪 Step 5: Test File Access</h3>
+      <p><strong>Action:</strong> Click each file button to verify access</p>
+      
+      <button onclick="testPDF()" class="warning-btn">📄 Test PDF</button>
+      <button onclick="testVideo()" class="warning-btn">🎥 Test Video</button>
+      <button onclick="testLetter()" class="warning-btn">📝 Test Letter</button>
+      
+      <div class="expected">
+        <strong>Expected Results:</strong><br>
+        • PDF button opens recommendation letter<br>
+        • Video button opens/downloads .mov file<br>
+        • Letter button shows modal with full text
+      </div>
+      
+      <div id="testFilesResult" style="display: none; margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px;"></div>
+    </div>
+    
+    <div class="warning">
+      <h4>🔧 Troubleshooting</h4>
+      <ul>
+        <li><strong>CORS errors:</strong> Check that functions have proper Access-Control headers</li>
+        <li><strong>404 on /api/save-reco:</strong> Verify netlify.toml redirect is correct</li>
+        <li><strong>Same external_id:</strong> Ensure both Pending and Completed use identical external_id</li>
+        <li><strong>Nothing updates:</strong> Check browser console for errors</li>
+      </ul>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_test_' + Date.now();
+    
+    // Update display
+    document.getElementById('externalIdValue').textContent = EXTERNAL_ID;
+    
+    function showResult(elementId, message, success = true) {
+      const element = document.getElementById(elementId);
+      element.style.display = 'block';
+      element.style.background = success ? '#e8f5e8' : '#ffeaea';
+      element.style.border = success ? '1px solid #4caf50' : '1px solid #f44336';
+      element.style.color = success ? '#2e7d32' : '#c62828';
+      element.innerHTML = message;
+    }
+    
+    async function testPending() {
+      try {
+        console.log('[SR] 🚀 Testing pending request...');
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            external_id: EXTERNAL_ID,
+            student_name: 'Test Student',
+            student_email: 'test@student.edu',
+            recommender_name: 'Prof. Test',
+            recommender_email: 'prof@university.edu',
+            program: 'Computer Science',
+            status: 'Pending'
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          console.log('[SR] ✅ MockU pending saved:', result);
+          
+          // Copy external ID to clipboard
+          navigator.clipboard.writeText(EXTERNAL_ID).catch(() => {});
+          
+          showResult('pendingResult', `
+            <strong>✅ SUCCESS!</strong><br>
+            Status: ${response.status}<br>
+            External ID: <code>${EXTERNAL_ID}</code><br>
+            Response: <pre>${JSON.stringify(result, null, 2)}</pre>
+            <br><strong>Next:</strong> Click "View Pending Status"
+          `);
+        } else {
+          console.error('[SR] ❌ MockU pending failed:', result);
+          showResult('pendingResult', `
+            <strong>❌ FAILED</strong><br>
+            Status: ${response.status}<br>
+            Error: <pre>${JSON.stringify(result, null, 2)}</pre>
+          `, false);
+        }
+        
+      } catch (error) {
+        console.error('[SR] ❌ Error:', error);
+        showResult('pendingResult', `<strong>❌ ERROR:</strong> ${error.message}`, false);
+      }
+    }
+    
+    function viewPending() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('viewPendingResult', `
+        <strong>🔍 Opened apply page</strong><br>
+        URL: <a href="${url}" target="_blank">${url}</a><br>
+        <br><strong>Expected:</strong> Should show "⏳ PENDING" status
+      `);
+    }
+    
+    async function testCompleted() {
+      try {
+        console.log('[SR] 🚀 Testing completed request with files...');
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            external_id: EXTERNAL_ID, // Same ID as pending
+            student_name: 'Test Student',
+            student_email: 'test@student.edu',
+            recommender_name: 'Prof. Test',
+            recommender_email: 'prof@university.edu',
+            program: 'Computer Science',
+            status: 'Completed',
+            
+            // Files
+            pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+            mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+            letter_content: `Dear Admissions Committee,
+
+I am writing to provide my strongest recommendation for Test Student, who has been my student in Advanced Computer Science courses.
+
+Test Student demonstrates exceptional ability in:
+• Problem-solving and analytical thinking
+• Software development and programming
+• Research methodology and technical writing
+• Collaborative teamwork and leadership
+
+I have also prepared a video recommendation and PDF documentation that provide additional context about their work and character.
+
+I recommend Test Student without reservation for admission to your Computer Science program.
+
+Sincerely,
+Prof. Test
+Department of Computer Science
+University of Excellence
+prof@university.edu`
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          console.log('[SR] ✅ MockU completed saved:', result);
+          
+          showResult('completedResult', `
+            <strong>✅ SUCCESS!</strong><br>
+            Status: ${response.status}<br>
+            External ID: <code>${EXTERNAL_ID}</code><br>
+            Files received:<br>
+            📄 PDF: ${result.files_received?.pdf ? 'YES' : 'NO'}<br>
+            🎥 Video: ${result.files_received?.video ? 'YES' : 'NO'}<br>
+            📝 Letter: ${result.files_received?.letter ? 'YES' : 'NO'}<br>
+            <br><strong>Next:</strong> Click "View Completed Status"
+          `);
+        } else {
+          console.error('[SR] ❌ MockU completed failed:', result);
+          showResult('completedResult', `
+            <strong>❌ FAILED</strong><br>
+            Status: ${response.status}<br>
+            Error: <pre>${JSON.stringify(result, null, 2)}</pre>
+          `, false);
+        }
+        
+      } catch (error) {
+        console.error('[SR] ❌ Error:', error);
+        showResult('completedResult', `<strong>❌ ERROR:</strong> ${error.message}`, false);
+      }
+    }
+    
+    function viewCompleted() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('viewCompletedResult', `
+        <strong>🎯 Opened apply page</strong><br>
+        URL: <a href="${url}" target="_blank">${url}</a><br>
+        <br><strong>Expected:</strong><br>
+        • Status: "✅ COMPLETED • 📄 PDF • 🎥 Video • 📝 Letter"<br>
+        • Three file buttons available<br>
+        <br><strong>Next:</strong> Test each file button
+      `);
+    }
+    
+    function testPDF() {
+      const pdfUrl = 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf';
+      window.open(pdfUrl, '_blank');
+      showResult('testFilesResult', `
+        <strong>📄 Testing PDF access</strong><br>
+        Opened: <a href="${pdfUrl}" target="_blank">${pdfUrl}</a><br>
+        <br><strong>Expected:</strong> PDF should open/download
+      `);
+    }
+    
+    function testVideo() {
+      const videoUrl = 'https://stellarrec.netlify.app/assets/mock/reco-video.mov';
+      window.open(videoUrl, '_blank');
+      showResult('testFilesResult', `
+        <strong>🎥 Testing Video access</strong><br>
+        Opened: <a href="${videoUrl}" target="_blank">${videoUrl}</a><br>
+        <br><strong>Expected:</strong> Video should open/download
+      `);
+    }
+    
+    function testLetter() {
+      showResult('testFilesResult', `
+        <strong>📝 Testing Letter Modal</strong><br>
+        <br><strong>Instructions:</strong><br>
+        1. Go to the apply page (Step 4)<br>
+        2. Click the "📝 Letter" button<br>
+        3. Modal should open with full letter text<br>
+        4. Modal should have PDF and Video buttons too<br>
+        <br><strong>Expected:</strong> Modal with formatted letter content
+      `);
+    }
+  </script>
+</body>
+</html>

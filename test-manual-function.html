@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Manual Function Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .test-section {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .warning {
+      background: #ff9800;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Manual Function Test</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Test the MockU save-reco function directly as suggested in the instructions
+    </p>
+    
+    <div class="test-section">
+      <h3>📤 Test 1: Pending Status</h3>
+      <p>Simulate student submitting a request (Pending status):</p>
+      <button onclick="testPending()">Send Pending Request</button>
+      <div id="pendingResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>✅ Test 2: Completed with Files</h3>
+      <p>Simulate recommender sending PDF + Video + Letter (Completed status):</p>
+      <button onclick="testCompleted()">Send Completed with Files</button>
+      <div id="completedResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>👀 Test 3: View Results</h3>
+      <p>Open the apply page to see the results:</p>
+      <button onclick="viewResults()" class="success">View Apply Page</button>
+      <div id="viewResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔍 Test 4: Check Status</h3>
+      <p>Check the recommendation status via API:</p>
+      <button onclick="checkStatus()" class="warning">Check Status API</button>
+      <div id="statusResult" class="result" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    const TEST_EXTERNAL_ID = 'sr_test_' + Date.now();
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function testPending() {
+      try {
+        showResult('pendingResult', 'Testing Pending status...', 'info');
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            external_id: TEST_EXTERNAL_ID,
+            student_name: 'Test Student',
+            student_email: 'test@student.edu',
+            recommender_name: 'Prof. Test',
+            recommender_email: 'prof@university.edu',
+            program: 'Computer Science',
+            status: 'Pending'
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showResult('pendingResult', `✅ PENDING TEST SUCCESS!
+          
+External ID: ${TEST_EXTERNAL_ID}
+Status: ${response.status}
+Response: ${JSON.stringify(result, null, 2)}
+
+Next: Check apply page to see "Pending" status`, 'success');
+        } else {
+          showResult('pendingResult', `❌ PENDING TEST FAILED
+Status: ${response.status}
+Error: ${JSON.stringify(result, null, 2)}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('pendingResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testCompleted() {
+      try {
+        showResult('completedResult', 'Testing Completed status with files...', 'info');
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            external_id: TEST_EXTERNAL_ID, // Same ID as pending test
+            student_name: 'Test Student',
+            student_email: 'test@student.edu',
+            recommender_name: 'Prof. Test',
+            recommender_email: 'prof@university.edu',
+            program: 'Computer Science',
+            status: 'Completed',
+            
+            // Files
+            pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+            mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+            letter_content: `Dear Admissions Committee,
+
+I am writing to provide my strongest recommendation for Test Student, who has been my student in Advanced Computer Science courses.
+
+Test Student demonstrates exceptional ability in:
+• Problem-solving and analytical thinking
+• Software development and programming
+• Research methodology and technical writing
+• Collaborative teamwork and leadership
+
+I have also prepared a video recommendation and PDF documentation that provide additional context about their work and character.
+
+I recommend Test Student without reservation for admission to your Computer Science program.
+
+Sincerely,
+Prof. Test
+Department of Computer Science
+University of Excellence
+prof@university.edu`
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showResult('completedResult', `✅ COMPLETED TEST SUCCESS!
+          
+External ID: ${TEST_EXTERNAL_ID}
+Status: ${response.status}
+Response: ${JSON.stringify(result, null, 2)}
+
+Files received:
+📄 PDF: ${result.files_received?.pdf ? 'YES' : 'NO'}
+🎥 Video: ${result.files_received?.video ? 'YES' : 'NO'}
+📝 Letter: ${result.files_received?.letter ? 'YES' : 'NO'}
+
+Next: Check apply page to see "Completed" with file buttons`, 'success');
+        } else {
+          showResult('completedResult', `❌ COMPLETED TEST FAILED
+Status: ${response.status}
+Error: ${JSON.stringify(result, null, 2)}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('completedResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    function viewResults() {
+      const url = `apply.html?external_id=${TEST_EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('viewResult', `🚀 Opened apply page with test data
+      
+URL: ${url}
+External ID: ${TEST_EXTERNAL_ID}
+
+Expected to see:
+1. If only pending test run: "⏳ PENDING" status
+2. If completed test run: "✅ COMPLETED" with buttons:
+   📄 PDF - Opens recommendation PDF
+   🎥 Video - Opens .mov file
+   📝 Letter - Shows letter in modal
+
+Click the buttons to test file access!`, 'info');
+    }
+    
+    async function checkStatus() {
+      try {
+        showResult('statusResult', 'Checking recommendation status...', 'info');
+        
+        const response = await fetch(`/api/get-reco?external_id=${TEST_EXTERNAL_ID}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          showResult('statusResult', `📊 STATUS CHECK SUCCESS!
+          
+External ID: ${TEST_EXTERNAL_ID}
+Status: ${response.status}
+Data: ${JSON.stringify(result, null, 2)}
+
+This shows what the apply page receives from the API.`, 'success');
+        } else if (response.status === 204) {
+          showResult('statusResult', `📊 STATUS CHECK - NO CONTENT
+          
+External ID: ${TEST_EXTERNAL_ID}
+Status: 204 (No Content)
+
+This means no recommendation found for this external_id.
+Run the pending/completed tests first.`, 'info');
+        } else {
+          const result = await response.text();
+          showResult('statusResult', `⚠️ STATUS CHECK RESPONSE
+          
+External ID: ${TEST_EXTERNAL_ID}
+Status: ${response.status}
+Response: ${result}
+
+This might be normal if using mock data.`, 'info');
+        }
+        
+      } catch (error) {
+        showResult('statusResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    // Show the external ID being used
+    document.addEventListener('DOMContentLoaded', function() {
+      const h1 = document.querySelector('h1');
+      h1.innerHTML += `<br><small style="color: #666; font-size: 0.6em;">External ID: ${TEST_EXTERNAL_ID}</small>`;
+    });
+  </script>
+</body>
+</html>

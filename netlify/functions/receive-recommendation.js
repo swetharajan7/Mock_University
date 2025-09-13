@@ -48,19 +48,40 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Process files from the recommendation
+    const files = {
+      pdf_url: recommendation.pdf_url || recommendation.pdfUrl || recommendation.file_url || '',
+      mov_url: recommendation.mov_url || recommendation.movUrl || recommendation.video_url || recommendation.videoUrl || '',
+      letter_content: recommendation.letter_content || recommendation.letterContent || recommendation.content || recommendation.letter || '',
+      letter_html: recommendation.letter_html || recommendation.letterHtml || ''
+    };
+
     // Process the recommendation
     const processedRecommendation = {
       id: recommendation.id || `rec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      recommenderName: recommendation.recommenderName,
-      recommenderEmail: recommendation.recommenderEmail,
-      recommenderTitle: recommendation.recommenderTitle || '',
-      studentName: recommendation.studentName,
-      studentEmail: recommendation.studentEmail,
+      external_id: recommendation.external_id || recommendation.externalId || `sr_${Date.now()}`,
+      recommenderName: recommendation.recommenderName || recommendation.recommender_name,
+      recommenderEmail: recommendation.recommenderEmail || recommendation.recommender_email,
+      recommenderTitle: recommendation.recommenderTitle || recommendation.recommender_title || '',
+      studentName: recommendation.studentName || recommendation.student_name,
+      studentEmail: recommendation.studentEmail || recommendation.student_email,
       program: recommendation.program || 'Not specified',
-      status: recommendation.status || 'Received',
-      content: recommendation.content || recommendation.letter || '',
+      status: recommendation.status || 'Completed', // Set to Completed when files are received
+      
+      // File URLs
+      pdf_url: files.pdf_url,
+      mov_url: files.mov_url,
+      letter_content: files.letter_content,
+      letter_html: files.letter_html,
+      
+      // File flags
+      has_pdf: !!files.pdf_url,
+      has_video: !!files.mov_url,
+      has_letter: !!(files.letter_content || files.letter_html),
+      
       submittedAt: recommendation.submittedAt || new Date().toISOString(),
       receivedAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       source: 'StellarRec',
       universityId: 'mock-university',
       metadata: {
@@ -77,10 +98,16 @@ exports.handler = async (event, context) => {
     // 3. Update application status
     // 4. Log the transaction
 
-    console.log('Recommendation received:', {
+    console.log('Recommendation received with files:', {
       id: processedRecommendation.id,
+      external_id: processedRecommendation.external_id,
       recommender: processedRecommendation.recommenderName,
       student: processedRecommendation.studentName,
+      files: {
+        pdf: processedRecommendation.has_pdf ? 'YES' : 'NO',
+        video: processedRecommendation.has_video ? 'YES' : 'NO',
+        letter: processedRecommendation.has_letter ? 'YES' : 'NO'
+      },
       timestamp: processedRecommendation.receivedAt
     });
 
@@ -135,12 +162,19 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({
         success: true,
-        message: 'Recommendation received successfully',
+        message: 'Recommendation with files received successfully',
         recommendationId: processedRecommendation.id,
-        status: 'received',
+        external_id: processedRecommendation.external_id,
+        status: processedRecommendation.status,
+        files_received: {
+          pdf: processedRecommendation.has_pdf,
+          video: processedRecommendation.has_video,
+          letter: processedRecommendation.has_letter
+        },
         timestamp: processedRecommendation.receivedAt,
         nextSteps: [
-          'Recommendation has been added to the student\'s application',
+          'Recommendation files have been added to the student\'s application',
+          'Student can now view PDF and video files',
           'Student has been notified via email',
           'Recommender has received delivery confirmation'
         ]

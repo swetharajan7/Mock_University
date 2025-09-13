@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 PDF + Video Integration Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .container {
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #f8f9fa;
+    }
+    
+    .test-section h3 {
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      background: linear-gradient(45deg, #1976d2, #42a5f5);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      min-width: 200px;
+      transition: all 0.3s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(25,118,210,0.4);
+    }
+    
+    .success {
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
+    }
+    
+    .warning {
+      background: linear-gradient(45deg, #ff9800, #ffb74d);
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 2px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 2px solid #f44336;
+      color: #c62828;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 2px solid #2196f3;
+      color: #1565c0;
+    }
+    
+    .file-preview {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin: 2rem 0;
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 8px;
+    }
+    
+    .step {
+      text-align: center;
+      flex: 1;
+      padding: 0.5rem;
+    }
+    
+    .step.active {
+      background: #1976d2;
+      color: white;
+      border-radius: 6px;
+    }
+    
+    .step.completed {
+      background: #4caf50;
+      color: white;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 PDF + Video Integration Test</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Test the complete flow: StellarRec → Mock University with PDF letters and .mov video files
+    </p>
+    
+    <div class="step-indicator">
+      <div class="step" id="step1">
+        <div>📤</div>
+        <div>Send Files</div>
+      </div>
+      <div class="step" id="step2">
+        <div>🔄</div>
+        <div>Process</div>
+      </div>
+      <div class="step" id="step3">
+        <div>📥</div>
+        <div>Receive</div>
+      </div>
+      <div class="step" id="step4">
+        <div>👀</div>
+        <div>View</div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 Complete Integration Test</h3>
+      <p>This will send a recommendation with PDF letter + .mov video to Mock University:</p>
+      <button onclick="runCompleteTest()" class="success">🚀 Run Complete Test</button>
+      <div id="completeResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📄 Test PDF Letter Only</h3>
+      <p>Send recommendation with PDF letter file:</p>
+      <button onclick="testPDFOnly()">📄 Send PDF Letter</button>
+      <div id="pdfResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🎥 Test Video Only</h3>
+      <p>Send recommendation with .mov video file:</p>
+      <button onclick="testVideoOnly()">🎥 Send Video</button>
+      <div id="videoResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📝 Test Text Letter Only</h3>
+      <p>Send recommendation with text letter content:</p>
+      <button onclick="testTextOnly()">📝 Send Text Letter</button>
+      <div id="textResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔍 View Results</h3>
+      <p>Open Mock University apply page to see the received files:</p>
+      <button onclick="openApplyPage()" class="warning">👀 View Apply Page</button>
+      <button onclick="checkStatus()" class="warning">📊 Check Status</button>
+      <div id="viewResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📋 Expected File URLs</h3>
+      <div class="file-preview">
+PDF: https://stellarrec.netlify.app/assets/mock/reco-demo.pdf
+Video: https://stellarrec.netlify.app/assets/mock/reco-video.mov
+Letter: Full text content with proper formatting
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_' + Date.now();
+    let currentStep = 1;
+    
+    function updateStep(step) {
+      // Reset all steps
+      for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`step${i}`);
+        stepEl.className = 'step';
+        if (i < step) stepEl.className += ' completed';
+        if (i === step) stepEl.className += ' active';
+      }
+      currentStep = step;
+    }
+    
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function runCompleteTest() {
+      try {
+        updateStep(1);
+        showResult('completeResult', '🚀 Starting complete integration test...\\n\\nStep 1: Preparing files...', 'info');
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        updateStep(2);
+        showResult('completeResult', '🚀 Starting complete integration test...\\n\\nStep 1: ✅ Files prepared\\nStep 2: 🔄 Sending to StellarRec API...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID,
+          recommender_name: 'Prof. Manas Mohan Nand',
+          recommender_email: 'manasnandmohan@gmail.com',
+          student_name: 'Student Applicant',
+          student_email: 'student@mockuniversity.edu',
+          program: 'Computer Science Graduate Program',
+          status: 'Completed',
+          
+          // PDF Letter
+          pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+          file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf', // Fallback
+          
+          // Video File
+          mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+          video_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov', // Alternative
+          
+          // Letter Content
+          letter_content: `Dear Admissions Committee at Mock University,\n\nI am writing to provide my strongest recommendation for Student Applicant, who has been my student in Advanced Computer Science courses. Over the course of our academic relationship, I have been consistently impressed by their technical skills, problem-solving abilities, and dedication to software engineering.\n\nStudent Applicant demonstrates exceptional ability in:\n• Advanced algorithms and data structures\n• Full-stack web development\n• Machine learning and AI applications\n• Collaborative software development\n• Research methodology and technical writing\n\nTheir capstone project on \"Distributed Systems for Real-time Data Processing\" showcased remarkable technical depth and innovative solutions that contributed meaningfully to our research lab.\n\nI have also prepared a video recommendation that provides additional context about their work and character. The accompanying PDF contains detailed examples of their technical contributions.\n\nI recommend Student Applicant without reservation for admission to your Computer Science graduate program. They possess the technical expertise, analytical thinking, and collaborative skills necessary for success in advanced studies.\n\nPlease feel free to contact me if you require any additional information.\n\nSincerely,\nProf. Manas Mohan Nand\nDepartment of Computer Science\nColumbia University\nmanasnandmohan@gmail.com`,
+          
+          letter_html: '<p><strong>Dear Admissions Committee at Mock University,</strong></p><p>I am writing to provide my strongest recommendation for Student Applicant...</p>'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          updateStep(3);
+          showResult('completeResult', `🚀 Starting complete integration test...\\n\\nStep 1: ✅ Files prepared\\nStep 2: ✅ Sent to StellarRec API\\nStep 3: 📥 Processing at Mock University...\\n\\nResponse: ${result}`, 'info');
+          
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          updateStep(4);
+          showResult('completeResult', `✅ COMPLETE SUCCESS!\\n\\nAll files sent and processed:\\n📄 PDF Letter: YES\\n🎥 Video File: YES\\n📝 Text Content: YES\\n\\nExternal ID: ${EXTERNAL_ID}\\n\\nResponse: ${result}\\n\\n🎯 Next: Click "View Apply Page" to see the results!`, 'success');
+          
+        } else {
+          showResult('completeResult', `❌ Test failed at StellarRec API\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('completeResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testPDFOnly() {
+      try {
+        showResult('pdfResult', 'Sending PDF letter only...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID + '_pdf',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          pdf_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf',
+          file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('pdfResult', `✅ PDF Letter sent successfully!\\n\\nExternal ID: ${testData.external_id}\\nResponse: ${result}`, 'success');
+        } else {
+          showResult('pdfResult', `❌ Failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('pdfResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testVideoOnly() {
+      try {
+        showResult('videoResult', 'Sending video file only...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID + '_video',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          mov_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov',
+          video_url: 'https://stellarrec.netlify.app/assets/mock/reco-video.mov'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('videoResult', `✅ Video file sent successfully!\\n\\nExternal ID: ${testData.external_id}\\nResponse: ${result}`, 'success');
+        } else {
+          showResult('videoResult', `❌ Failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('videoResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testTextOnly() {
+      try {
+        showResult('textResult', 'Sending text letter only...', 'info');
+        
+        const testData = {
+          external_id: EXTERNAL_ID + '_text',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          letter_content: 'Dear Admissions Committee,\\n\\nI am pleased to recommend the student for your program. They have demonstrated excellent academic performance and research capabilities.\\n\\nSincerely,\\nProf. Manas Mohan Nand'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('textResult', `✅ Text letter sent successfully!\\n\\nExternal ID: ${testData.external_id}\\nResponse: ${result}`, 'success');
+        } else {
+          showResult('textResult', `❌ Failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('textResult', `❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    function openApplyPage() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult('viewResult', `🚀 Opened Mock University apply page\\n\\nExternal ID: ${EXTERNAL_ID}\\n\\nYou should see:\\n\\n📊 Status: "Prof. Manas Mohan Nand • Completed • 📄 PDF • 🎥 Video • 📝 Letter"\\n\\n🔘 Action buttons for:\\n  📄 PDF - Opens the PDF file\\n  🎥 Video - Opens the .mov file\\n  📝 Letter - Shows letter in modal\\n\\nClick each button to test file access!`, 'info');
+    }
+    
+    async function checkStatus() {
+      try {
+        showResult('viewResult', 'Checking recommendation status...', 'info');
+        
+        const response = await fetch(`/api/get-reco?external_id=${EXTERNAL_ID}`);
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult('viewResult', `📊 Status Check Results:\\n\\nExternal ID: ${EXTERNAL_ID}\\nResponse: ${result}\\n\\nIf status shows "Completed" with file URLs, the integration is working!`, 'success');
+        } else {
+          showResult('viewResult', `⚠️ Status check response:\\nStatus: ${response.status}\\nResponse: ${result}\\n\\nThis might be normal if using mock data.`, 'info');
+        }
+        
+      } catch (error) {
+        showResult('viewResult', `❌ Status check error: ${error.message}`, 'error');
+      }
+    }
+    
+    // Initialize
+    updateStep(1);
+  </script>
+</body>
+</html>

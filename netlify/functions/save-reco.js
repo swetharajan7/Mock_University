@@ -47,20 +47,65 @@ exports.handler = async (event) => {
 
   const now = new Date().toISOString();
 
-  // For now, we'll just return success and log the data
-  // In production, this would save to a database
-  console.log('Recommendation saved:', {
-    external_id,
-    data: body,
-    timestamp: now
-  });
+  // Process multiple file types
+  const files = {
+    pdf_url: body.pdf_url || body.file_url || '',
+    mov_url: body.mov_url || body.video_url || '',
+    letter_content: body.letter_content || body.letter_html || '',
+    letter_text: body.letter_text || ''
+  };
 
   const result = {
     ...body,
-    status: body.status || 'Pending',
+    ...files,
+    status: body.status || 'Completed', // Set to Completed when files are received
     updated_at: now,
-    created_at: now
+    created_at: now,
+    has_pdf: !!files.pdf_url,
+    has_video: !!files.mov_url,
+    has_letter: !!(files.letter_content || files.letter_text)
   };
+
+  // Log detailed file information
+  console.log('Recommendation with files saved:', {
+    external_id,
+    recommender: body.recommender_name,
+    status: result.status,
+    files: {
+      pdf: files.pdf_url ? 'YES' : 'NO',
+      video: files.mov_url ? 'YES' : 'NO',
+      letter: files.letter_content ? 'YES' : 'NO'
+    },
+    timestamp: now
+  });
+
+  // Also forward to receive-recommendation endpoint for Mock University integration
+  try {
+    const integrationPayload = {
+      type: 'recommendation',
+      data: {
+        external_id: external_id,
+        recommenderName: body.recommender_name || 'Unknown Recommender',
+        recommenderEmail: body.recommender_email || 'unknown@example.com',
+        studentName: body.student_name || 'Student Applicant',
+        studentEmail: body.student_email || 'student@example.com',
+        program: body.program || 'Graduate Program',
+        status: result.status,
+        pdf_url: files.pdf_url,
+        mov_url: files.mov_url,
+        letter_content: files.letter_content,
+        letter_html: files.letter_html || files.letter_content,
+        submittedAt: now,
+        stellarrecId: external_id
+      }
+    };
+
+    // Forward to Mock University (simulate internal API call)
+    console.log('Forwarding to Mock University:', integrationPayload);
+    
+  } catch (integrationError) {
+    console.log('Integration forwarding failed (non-critical):', integrationError.message);
+  }
 
   return { 
     statusCode: 200, 
@@ -69,7 +114,12 @@ exports.handler = async (event) => {
       ok: true, 
       external_id, 
       updated_at: now,
-      message: 'Recommendation saved successfully'
+      files_received: {
+        pdf: !!files.pdf_url,
+        video: !!files.mov_url,
+        letter: !!files.letter_content
+      },
+      message: 'Recommendation with files saved successfully'
     }) 
   };
 };

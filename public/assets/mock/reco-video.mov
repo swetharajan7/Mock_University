@@ -1,0 +1,12 @@
+# This is a placeholder for a .mov video file
+# In a real implementation, this would be a binary video file
+# For testing purposes, this text file simulates the video file presence
+
+Video Recommendation Content:
+- Recommender: Prof. Manas Mohan Nand
+- Student: Student Applicant
+- Duration: 2 minutes
+- Content: Personal recommendation discussing student's abilities and character
+
+Note: This is a mock file for testing the integration.
+In production, this would be an actual .mov video file.
