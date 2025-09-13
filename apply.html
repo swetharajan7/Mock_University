@@ -450,15 +450,34 @@
 
         if (rowAction){
           rowAction.innerHTML = '';
-          if (rec.status === 'completed' && rec.artifact_url){
-            const a = document.createElement('a');
-            a.href = rec.artifact_url;
-            a.target = '_blank';
-            a.rel = 'noopener';
-            a.className = 'btn btn-secondary';
-            a.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;';
-            a.innerHTML = '<span class="material-icons" style="font-size: 16px;">download</span> Download';
-            rowAction.appendChild(a);
+          if (rec.status === 'completed'){
+            // Create action buttons container
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.cssText = 'display: flex; gap: 0.5rem; flex-wrap: wrap;';
+            
+            // View Letter button (always available when completed)
+            if (rec.letter_content) {
+              const viewBtn = document.createElement('button');
+              viewBtn.className = 'btn btn-secondary';
+              viewBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem;';
+              viewBtn.innerHTML = '<span class="material-icons" style="font-size: 16px;">visibility</span> View Letter';
+              viewBtn.onclick = () => showLetterModal(rec);
+              actionsDiv.appendChild(viewBtn);
+            }
+            
+            // Download button (if artifact URL is available)
+            if (rec.artifact_url) {
+              const downloadBtn = document.createElement('a');
+              downloadBtn.href = rec.artifact_url;
+              downloadBtn.target = '_blank';
+              downloadBtn.rel = 'noopener';
+              downloadBtn.className = 'btn btn-secondary';
+              downloadBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;';
+              downloadBtn.innerHTML = '<span class="material-icons" style="font-size: 16px;">download</span> Download';
+              actionsDiv.appendChild(downloadBtn);
+            }
+            
+            rowAction.appendChild(actionsDiv);
           } else {
             rowAction.innerHTML = '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>';
           }
@@ -477,6 +496,106 @@
         }
         setTimeout(poll, 2500); // lightweight live update every 2.5 seconds
       }
+
+      // Letter modal functionality
+      window.showLetterModal = function(rec) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'letter-modal-overlay';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 2rem;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'letter-modal-content';
+        modalContent.style.cssText = `
+          background: white;
+          border-radius: 16px;
+          padding: 2rem;
+          max-width: 700px;
+          width: 100%;
+          max-height: 80vh;
+          overflow-y: auto;
+          position: relative;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        `;
+        
+        modalContent.innerHTML = `
+          <button onclick="closeLetterModal()" style="
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">&times;</button>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="color: var(--brand-1); margin-bottom: 0.5rem;">Recommendation Letter</h2>
+            <div style="color: var(--muted); font-size: 0.9rem;">
+              <strong>From:</strong> ${rec.recommender_name}<br>
+              <strong>For:</strong> ${rec.student_name}<br>
+              <strong>Date:</strong> ${new Date(rec.updated_at).toLocaleDateString()}
+            </div>
+          </div>
+          
+          <div style="
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            min-height: 200px;
+          ">${rec.letter_content || 'Letter content not available.'}</div>
+          
+          <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+            ${rec.artifact_url ? `
+              <a href="${rec.artifact_url}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                <span class="material-icons" style="font-size: 16px;">download</span>
+                Download PDF
+              </a>
+            ` : ''}
+            <button onclick="closeLetterModal()" class="btn btn-secondary">Close</button>
+          </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Close on overlay click
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeLetterModal();
+          }
+        });
+      };
+      
+      window.closeLetterModal = function() {
+        const modal = document.querySelector('.letter-modal-overlay');
+        if (modal) {
+          modal.remove();
+        }
+      };
 
       // Start polling
       poll();

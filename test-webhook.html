@@ -240,6 +240,27 @@
         ],
         status: 'completed',
         artifact_url: 'https://example.com/recommendations/sample-recommendation.pdf',
+        letter_content: `Dear Admissions Committee,
+
+I am writing to provide my strongest recommendation for Student Applicant, who has been my student in MA Historical Studies. Over the course of our academic relationship, I have been consistently impressed by their intellectual curiosity, analytical skills, and dedication to historical research.
+
+Student Applicant demonstrates exceptional ability in:
+- Critical analysis of historical sources
+- Research methodology and archival work  
+- Written communication and argumentation
+- Collaborative learning and peer engagement
+
+Their thesis project on "Colonial Administrative Practices in 18th Century India" showcased remarkable depth of understanding and original insights that contributed meaningfully to our field of study.
+
+I recommend Student Applicant without reservation for admission to your program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in graduate studies.
+
+Please feel free to contact me if you require any additional information.
+
+Sincerely,
+Prof. Manas Mohan Nand
+Department of Historical Studies
+Columbia University`,
+        letter_format: 'text',
         ts: Date.now()
       };
       
@@ -308,6 +329,7 @@
             External ID: ${statusData.external_id}<br>
             Recommender: ${statusData.recommender_name}<br>
             Status: ${statusData.status?.toUpperCase()}<br>
+            ${statusData.letter_content ? `✅ Letter Content: Available (${statusData.letter_content.length} chars)<br>` : '❌ Letter Content: Not available<br>'}
             ${statusData.artifact_url ? `File: <a href="${statusData.artifact_url}" target="_blank">Download</a><br>` : ''}
             Updated: ${new Date(statusData.updated_at).toLocaleString()}
           `;

@@ -7,7 +7,7 @@ export default async (req) => {
   const blobs = createClient({ token: process.env.NETLIFY_BLOBS_TOKEN });
   const body = await req.json().catch(() => ({}));
 
-  // Minimal schema we expect from StellarRec
+  // Enhanced schema we expect from StellarRec
   const {
     external_id,            // shared key across both steps
     student_name,
@@ -17,6 +17,8 @@ export default async (req) => {
     universities = [],      // array of { unitid, name }
     status,                 // 'pending' | 'sent' | 'completed'
     artifact_url = '',      // pdf/txt/mp4 once completed
+    letter_content = '',    // actual letter text from StellarRec
+    letter_format = 'text', // 'text' | 'html' | 'pdf'
     ts = Date.now(),
   } = body;
 
@@ -34,8 +36,10 @@ export default async (req) => {
     recommender_name,
     recommender_email,
     universities,
-    status,       // overwrite step-wise
-    artifact_url, // may be empty until completion
+    status,         // overwrite step-wise
+    artifact_url,   // may be empty until completion
+    letter_content, // actual letter text
+    letter_format,  // format of the letter
     updated_at: ts,
     created_at: existing?.created_at || ts,
   };
