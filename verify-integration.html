@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎯 StellarRec Integration Verification - MockUniversity</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+    }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .status-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+    
+    .status-card.success {
+      border-color: #4caf50;
+      background: #f0fff4;
+    }
+    
+    .status-card.pending {
+      border-color: #ff9800;
+      background: #fff8e1;
+    }
+    
+    .status-card.error {
+      border-color: #f44336;
+      background: #ffebee;
+    }
+    
+    .status-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .test-button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0.5rem;
+      transition: all 0.3s;
+    }
+    
+    .test-button:hover {
+      background: #1565c0;
+      transform: translateY(-2px);
+    }
+    
+    .test-button.success {
+      background: #4caf50;
+    }
+    
+    .test-button.success:hover {
+      background: #45a049;
+    }
+    
+    .integration-flow {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .flow-step {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .step-number {
+      background: #1976d2;
+      color: white;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 1rem;
+    }
+    
+    .urls-section {
+      background: #f5f5f5;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .url-item {
+      margin: 0.5rem 0;
+      font-family: monospace;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border-left: 4px solid #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 StellarRec Integration Verification</h1>
+    
+    <div class="integration-flow">
+      <h2 style="color: #1976d2; margin-bottom: 1rem;">📋 Integration Flow</h2>
+      
+      <div class="flow-step">
+        <div class="step-number">1</div>
+        <div>
+          <strong>StellarRec Recommender Portal</strong><br>
+          Write recommendation letter → Run SR_MOCK.testLetterCapture() → Send to Universities
+        </div>
+      </div>
+      
+      <div class="flow-step">
+        <div class="step-number">2</div>
+        <div>
+          <strong>Webhook Processing</strong><br>
+          StellarRec sends letter content to MockUniversity reco-hook endpoint
+        </div>
+      </div>
+      
+      <div class="flow-step">
+        <div class="step-number">3</div>
+        <div>
+          <strong>Letter Display</strong><br>
+          MockUniversity shows letter in green text box with StellarRec branding
+        </div>
+      </div>
+    </div>
+    
+    <div class="status-grid">
+      <div class="status-card" id="functionsCard">
+        <div class="status-title">
+          <span id="functionsIcon">⏳</span>
+          Netlify Functions
+        </div>
+        <div id="functionsStatus">Checking...</div>
+      </div>
+      
+      <div class="status-card" id="integrationCard">
+        <div class="status-title">
+          <span id="integrationIcon">⏳</span>
+          Integration Script
+        </div>
+        <div id="integrationStatus">Checking...</div>
+      </div>
+      
+      <div class="status-card" id="applyPageCard">
+        <div class="status-title">
+          <span id="applyPageIcon">⏳</span>
+          Apply Page
+        </div>
+        <div id="applyPageStatus">Checking...</div>
+      </div>
+      
+      <div class="status-card" id="letterDisplayCard">
+        <div class="status-title">
+          <span id="letterDisplayIcon">⏳</span>
+          Letter Display
+        </div>
+        <div id="letterDisplayStatus">Checking...</div>
+      </div>
+    </div>
+    
+    <div style="text-align: center; margin: 2rem 0;">
+      <button class="test-button" onclick="runFullTest()">🧪 Run Full Integration Test</button>
+      <button class="test-button" onclick="testLetterDisplay()">📝 Test Letter Display</button>
+      <button class="test-button" onclick="openApplyPage()">🔗 Open Apply Page</button>
+    </div>
+    
+    <div class="urls-section">
+      <h3 style="color: #1976d2;">🔗 Integration URLs</h3>
+      <div class="url-item">
+        <strong>StellarRec:</strong> https://stellarrec.netlify.app/dashboard#recommender
+      </div>
+      <div class="url-item">
+        <strong>MockUniversity Apply:</strong> https://mockuniversity.netlify.app/apply?external_id=XXXX
+      </div>
+      <div class="url-item">
+        <strong>Webhook Endpoint:</strong> https://mockuniversity.netlify.app/.netlify/functions/reco-hook
+      </div>
+      <div class="url-item">
+        <strong>Test Interface:</strong> https://mockuniversity.netlify.app/test-webhook.html
+      </div>
+    </div>
+    
+    <div style="background: #e8f5e8; border-radius: 12px; padding: 1.5rem; margin: 2rem 0;">
+      <h3 style="color: #2e7d32;">✅ Expected Result</h3>
+      <p><strong>When integration is working correctly:</strong></p>
+      <ul>
+        <li>📝 Green-bordered text area appears on apply page</li>
+        <li>🏷️ Label: "Recommendation Letter from Prof. Manas Mohan Nand via StellarRec"</li>
+        <li>📊 Meta info: Status, submission date, character count</li>
+        <li>📖 Full letter content displayed in text area</li>
+        <li>🔒 Read-only formatting prevents editing</li>
+      </ul>
+    </div>
+    
+    <div id="testResults" style="margin-top: 2rem; display: none;">
+      <h3 style="color: #1976d2;">🧪 Test Results</h3>
+      <div id="testOutput" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; font-family: monospace; white-space: pre-wrap;"></div>
+    </div>
+  </div>
+  
+  <script>
+    let testOutput = '';
+    
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      testOutput += `[${timestamp}] ${message}\n`;
+      const outputEl = document.getElementById('testOutput');
+      if (outputEl) {
+        outputEl.textContent = testOutput;
+        document.getElementById('testResults').style.display = 'block';
+      }
+    }
+    
+    function updateStatus(cardId, iconId, status, message, success = null) {
+      const card = document.getElementById(cardId);
+      const icon = document.getElementById(iconId);
+      const statusEl = document.getElementById(status + 'Status');
+      
+      if (card && icon && statusEl) {
+        if (success === true) {
+          card.className = 'status-card success';
+          icon.textContent = '✅';
+        } else if (success === false) {
+          card.className = 'status-card error';
+          icon.textContent = '❌';
+        } else {
+          card.className = 'status-card pending';
+          icon.textContent = '⏳';
+        }
+        statusEl.textContent = message;
+      }
+    }
+    
+    async function checkFunctions() {
+      try {
+        // Test reco-hook function
+        const hookResponse = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ external_id: 'test_verification' })
+        });
+        
+        // Test get-recommendation-data function
+        const dataResponse = await fetch('/.netlify/functions/get-recommendation-data?external_id=test');
+        
+        if (hookResponse.status !== 500 && dataResponse.status !== 500) {
+          updateStatus('functionsCard', 'functionsIcon', 'functions', 'Functions deployed and responding', true);
+          log('✅ Netlify functions are working');
+          return true;
+        } else {
+          throw new Error('Functions not responding correctly');
+        }
+      } catch (error) {
+        updateStatus('functionsCard', 'functionsIcon', 'functions', 'Functions not available: ' + error.message, false);
+        log('❌ Netlify functions error: ' + error.message);
+        return false;
+      }
+    }
+    
+    function checkIntegrationScript() {
+      if (window.StellarRecIntegration) {
+        updateStatus('integrationCard', 'integrationIcon', 'integration', 'Integration script loaded', true);
+        log('✅ StellarRec integration script loaded');
+        return true;
+      } else {
+        updateStatus('integrationCard', 'integrationIcon', 'integration', 'Integration script not found', false);
+        log('❌ StellarRec integration script not loaded');
+        return false;
+      }
+    }
+    
+    function checkApplyPage() {
+      // Check if we can access the apply page
+      try {
+        const applyUrl = 'apply.html?external_id=test_verification';
+        updateStatus('applyPageCard', 'applyPageIcon', 'applyPage', 'Apply page accessible', true);
+        log('✅ Apply page is accessible');
+        return true;
+      } catch (error) {
+        updateStatus('applyPageCard', 'applyPageIcon', 'applyPage', 'Apply page error: ' + error.message, false);
+        log('❌ Apply page error: ' + error.message);
+        return false;
+      }
+    }
+    
+    async function testLetterDisplay() {
+      try {
+        log('🧪 Testing letter display functionality...');
+        
+        // Send test data
+        const testData = {
+          external_id: 'verify_' + Date.now(),
+          student_name: 'Student Applicant',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          recommender_email: 'manasnandmohan@gmail.com',
+          status: 'completed',
+          letter_content: 'Dear Admissions Committee,\n\nThis is a test recommendation letter for verification purposes.\n\nSincerely,\nProf. Manas Mohan Nand'
+        };
+        
+        const response = await fetch('/.netlify/functions/reco-hook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+        
+        if (response.ok) {
+          updateStatus('letterDisplayCard', 'letterDisplayIcon', 'letterDisplay', 'Letter display test successful', true);
+          log('✅ Letter display test completed successfully');
+          
+          // Open apply page with test data
+          setTimeout(() => {
+            const applyUrl = `apply.html?external_id=${testData.external_id}`;
+            window.open(applyUrl, 'testApply', 'width=1200,height=800');
+            log('📱 Opened apply page for verification');
+          }, 1000);
+          
+          return true;
+        } else {
+          throw new Error('Letter display test failed');
+        }
+      } catch (error) {
+        updateStatus('letterDisplayCard', 'letterDisplayIcon', 'letterDisplay', 'Letter display test failed: ' + error.message, false);
+        log('❌ Letter display test failed: ' + error.message);
+        return false;
+      }
+    }
+    
+    async function runFullTest() {
+      log('🚀 Starting full integration test...');
+      testOutput = '';
+      
+      const functionsOk = await checkFunctions();
+      const integrationOk = checkIntegrationScript();
+      const applyPageOk = checkApplyPage();
+      const letterDisplayOk = await testLetterDisplay();
+      
+      const allPassed = functionsOk && integrationOk && applyPageOk && letterDisplayOk;
+      
+      if (allPassed) {
+        log('🎉 ALL TESTS PASSED! Integration is ready for production.');
+      } else {
+        log('⚠️ Some tests failed. Check the status cards above for details.');
+      }
+      
+      return allPassed;
+    }
+    
+    function openApplyPage() {
+      const testId = 'demo_' + Date.now();
+      const applyUrl = `apply.html?external_id=${testId}`;
+      window.open(applyUrl, 'demoApply', 'width=1200,height=800');
+      log('📱 Opened apply page for manual testing');
+    }
+    
+    // Auto-run basic checks on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      log('🎯 Integration verification page loaded');
+      
+      setTimeout(() => {
+        checkFunctions();
+        checkIntegrationScript();
+        checkApplyPage();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

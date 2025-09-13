@@ -329,14 +329,53 @@
         simulateRecommendation() {
             const testRecommendation = {
                 id: 'test_' + Date.now(),
-                recommenderName: 'Dr. Jane Smith',
-                recommenderEmail: 'jane.smith@university.edu',
-                recommenderTitle: 'Professor of Computer Science',
-                studentName: 'John Doe',
-                studentEmail: 'john.doe@student.edu',
-                program: 'Computer Science',
-                status: 'Received',
-                content: 'This is a test recommendation letter...',
+                recommenderName: 'Prof. Manas Mohan Nand',
+                recommenderEmail: 'manasnandmohan@gmail.com',
+                recommenderTitle: 'Professor of Historical Studies',
+                studentName: 'Student Applicant',
+                studentEmail: 'swetha.rajan103@gmail.com',
+                program: 'MA Historical Studies',
+                status: 'Completed',
+                content: `Dear Admissions Committee at Mock University,
+
+I am pleased to recommend Student Applicant for admission to your program. I have known Student Applicant as a dedicated and motivated individual who consistently demonstrates intellectual curiosity and strong analytical skills.
+
+Student Applicant demonstrates exceptional ability in:
+- Critical analysis of historical sources
+- Research methodology and archival work  
+- Written communication and argumentation
+- Collaborative learning and peer engagement
+
+Their thesis project on "Colonial Administrative Practices in 18th Century India" showcased remarkable depth of understanding and original insights that contributed meaningfully to our field of study.
+
+I recommend Student Applicant without reservation for admission to your program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in graduate studies.
+
+Please feel free to contact me if you require any additional information.
+
+Sincerely,
+Prof. Manas Mohan Nand
+Department of Historical Studies
+Columbia University`,
+                letter_content: `Dear Admissions Committee at Mock University,
+
+I am pleased to recommend Student Applicant for admission to your program. I have known Student Applicant as a dedicated and motivated individual who consistently demonstrates intellectual curiosity and strong analytical skills.
+
+Student Applicant demonstrates exceptional ability in:
+- Critical analysis of historical sources
+- Research methodology and archival work  
+- Written communication and argumentation
+- Collaborative learning and peer engagement
+
+Their thesis project on "Colonial Administrative Practices in 18th Century India" showcased remarkable depth of understanding and original insights that contributed meaningfully to our field of study.
+
+I recommend Student Applicant without reservation for admission to your program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in graduate studies.
+
+Please feel free to contact me if you require any additional information.
+
+Sincerely,
+Prof. Manas Mohan Nand
+Department of Historical Studies
+Columbia University`,
                 submittedAt: new Date().toISOString(),
                 source: 'StellarRec (Test)'
             };
