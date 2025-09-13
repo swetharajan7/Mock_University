@@ -862,5 +862,62 @@
       showNotification: showNotification
     };
   </script>
+  
+  <!-- StellarRec External ID Integration Script -->
+  <script>
+    (async function(){
+      const elStatus = document.getElementById('sr-status') || (function(){
+        const box = document.createElement('div');
+        box.id = 'sr-status';
+        box.style = 'margin:12px 0; padding:12px; border-radius:10px; background:#f1f5f9; color:#0f172a;';
+        const mount = document.querySelector('#recommendations') || document.querySelector('.main-content') || document.body;
+        mount.prepend(box);
+        return box;
+      })();
+
+      function uiPending(name){
+        elStatus.style.background = '#fff7ed';
+        elStatus.style.color = '#7c2d12';
+        elStatus.innerHTML = `<b>${name || 'Recommender'}</b> • <em>Pending</em> • waiting for response`;
+      }
+      function uiCompleted(name, fileUrl){
+        elStatus.style.background = '#ecfdf5';
+        elStatus.style.color = '#064e3b';
+        elStatus.innerHTML = `
+          <b>${name || 'Recommender'}</b> • <em>Completed</em>
+          ${fileUrl ? `• <a href="${fileUrl}" target="_blank" rel="noopener">Download file</a>` : ''}
+        `;
+      }
+      function uiNone(){ elStatus.textContent = 'No recommendation found yet for this external_id.'; }
+
+      const params = new URLSearchParams(location.search);
+      const externalId = params.get('external_id');
+      if (!externalId) { elStatus.textContent = 'Missing ?external_id=...'; return; }
+
+      async function fetchReco(){
+        const res = await fetch('/api/get-reco?external_id=' + encodeURIComponent(externalId), { cache: 'no-store' });
+        if (res.status === 204) return null;
+        if (!res.ok) throw new Error('get-reco failed ' + res.status);
+        return res.json();
+      }
+
+      async function paint(){
+        const data = await fetchReco().catch(()=>null);
+        if (!data) { uiNone(); return; }
+
+        // expected shape from save-reco
+        const name = data.recommender_name || data.recommender || 'Recommender';
+        if ((data.status || '').toLowerCase() === 'completed') {
+          uiCompleted(name, data.file_url || data.pdf_url || data.txt_url || data.mov_url);
+        } else {
+          uiPending(name);
+        }
+      }
+
+      // initial + poll
+      await paint();
+      setInterval(paint, 4000);
+    })();
+  </script>
 </body>
 </html>

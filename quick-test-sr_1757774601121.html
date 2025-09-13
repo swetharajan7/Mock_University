@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Quick Test for sr_1757774601121</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .success:hover {
+      background: #45a049;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .external-id {
+      background: #fff3cd;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Quick Fix for External ID</h1>
+    
+    <div class="external-id">
+      Testing: <code>sr_1757774601121</code>
+    </div>
+    
+    <button onclick="sendTestData()">1. Send Test Data</button>
+    <button onclick="checkStatus()">2. Check Status</button>
+    <button onclick="openApplyPage()" class="success">3. Open Apply Page</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+  </div>
+  
+  <script>
+    const EXTERNAL_ID = 'sr_1757774601121';
+    
+    function showResult(message, isSuccess = true) {
+      const result = document.getElementById('result');
+      result.className = `result ${isSuccess ? 'success' : 'error'}`;
+      result.textContent = message;
+      result.style.display = 'block';
+    }
+    
+    async function sendTestData() {
+      try {
+        showResult('Sending test data...', true);
+        
+        const testData = {
+          external_id: EXTERNAL_ID,
+          student_name: 'Student Applicant',
+          student_email: 'swetha.rajan103@gmail.com',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          recommender_email: 'manasnandmohan@gmail.com',
+          recommender: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          file_url: 'https://example.com/recommendation.pdf',
+          pdf_url: 'https://example.com/recommendation.pdf',
+          letter_content: 'Dear Admissions Committee at Mock University,\\n\\nI am writing to provide my strongest recommendation for Student Applicant...',
+          ts: Date.now()
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult(`✅ SUCCESS! Test data sent for ${EXTERNAL_ID}\\n\\nResponse: ${result}\\n\\nNow click "Open Apply Page" to see the result!`, true);
+        } else {
+          showResult(`❌ FAILED to send test data\\nStatus: ${response.status}\\nError: ${result}`, false);
+        }
+        
+      } catch (error) {
+        showResult(`❌ ERROR: ${error.message}`, false);
+      }
+    }
+    
+    async function checkStatus() {
+      try {
+        showResult('Checking status...', true);
+        
+        const response = await fetch(`/api/get-reco?external_id=${EXTERNAL_ID}`);
+        
+        if (response.status === 204) {
+          showResult(`⚠️ No data found for ${EXTERNAL_ID}\\n\\nClick "Send Test Data" first!`, false);
+        } else if (response.ok) {
+          const data = await response.json();
+          showResult(`✅ Data found for ${EXTERNAL_ID}!\\n\\n${JSON.stringify(data, null, 2)}`, true);
+        } else {
+          const error = await response.text();
+          showResult(`❌ Error checking status: ${error}`, false);
+        }
+        
+      } catch (error) {
+        showResult(`❌ ERROR: ${error.message}`, false);
+      }
+    }
+    
+    function openApplyPage() {
+      const url = `apply.html?external_id=${EXTERNAL_ID}`;
+      window.open(url, '_blank');
+      showResult(`🚀 Opened apply page with external_id: ${EXTERNAL_ID}\\n\\nYou should see:\\n- "Prof. Manas Mohan Nand • Completed • Download file"\\n- At the top of the page`, true);
+    }
+  </script>
+</body>
+</html>

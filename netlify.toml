@@ -1,7 +1,12 @@
 # netlify.toml
 [build]
-  command = ""        # No build step
-  publish = "public"  # Publish the /public folder
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"
