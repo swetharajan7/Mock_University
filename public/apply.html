@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application - MockUniversity</title>
+  
+  <!-- Fonts & icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <style>
+    :root {
+      --brand-1: #1976d2;
+      --brand-2: #7c4dff;
+      --text: #0f172a;
+      --muted: #475569;
+      --panel: #ffffff;
+      --border: #e5e7eb;
+      --shadow: 0 12px 32px rgba(0,0,0,.10);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --pending: #f59e0b;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text);
+      background: #f7f9fc;
+      line-height: 1.6;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
+      color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 20px rgba(25,118,210,.30);
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+    
+    .header-title {
+      margin-left: 2rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 2rem;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      height: fit-content;
+    }
+    
+    .sidebar h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    
+    .menu-item {
+      display: block;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    
+    .menu-item:hover, .menu-item.active {
+      background: linear-gradient(135deg, #eef5ff, #f3e9ff);
+      color: var(--brand-1);
+      font-weight: 600;
+    }
+    
+    /* Main Content */
+    .main-content {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--brand-1);
+      margin-bottom: 0.5rem;
+    }
+    
+    .section-subtitle {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+    
+    /* Recommendations Section */
+    .recommendations-info {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-left: 4px solid var(--brand-1);
+    }
+    
+    .recommendations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    
+    .recommendations-table th,
+    .recommendations-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .recommendations-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status-received {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-submitted {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .no-recommenders {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(25,118,210,.3);
+    }
+    
+    .btn-secondary {
+      background: #f8fafc;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: #eef5ff;
+    }
+    
+    /* Demo Badge */
+    .demo-badge {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--warning);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 1000;
+    }
+    
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      z-index: 1001;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: var(--success);
+    }
+    
+    .notification.error {
+      background: var(--error);
+    }
+    
+    .notification.info {
+      background: var(--brand-1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+      
+      .sidebar {
+        order: 2;
+      }
+      
+      .main-content {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-badge">Demo</div>
+  
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <a class="logo" href="../index.html">
+        <span class="material-icons">school</span>
+        MU Mock University
+      </a>
+      <div class="header-title">Application Portal</div>
+    </div>
+  </div>
+  
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h3>Application Menu</h3>
+      <a href="#" class="menu-item">Home</a>
+      <a href="#" class="menu-item">Personal Background</a>
+      <a href="#" class="menu-item">Program Selection</a>
+      <a href="#" class="menu-item">Term Selection</a>
+      <a href="#" class="menu-item">Emergency Contact(s)</a>
+      <a href="#" class="menu-item">Additional Information</a>
+      <a href="#" class="menu-item">Student Conduct</a>
+      <a href="#" class="menu-item">Program Questions</a>
+      <a href="#" class="menu-item">Visa Information</a>
+      <a href="#" class="menu-item">Academic History</a>
+      <a href="#" class="menu-item">Statement of Purpose</a>
+      <a href="#" class="menu-item">Résumé</a>
+      <a href="#" class="menu-item">Writing Sample</a>
+      <a href="#" class="menu-item">Test Scores</a>
+      <a href="#" class="menu-item">Professional/Work/Military Experience</a>
+      <a href="#" class="menu-item">Achievements/Civic Involvement</a>
+      <a href="#" class="menu-item active">Recommendations</a>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <h1 class="section-title">Recommendations</h1>
+      <p class="section-subtitle">
+        Some graduate programs may prefer two academic references, while others might accept academic or 
+        professional references. Please consult with the office of admission with questions about recommendations.
+      </p>
+      
+      <div class="recommendations-info">
+        <p><strong>Note:</strong> Undergraduate applicants, including those for Bachelor's Program for Adults and Transfer Students, are not 
+        required to submit letters of recommendation but may choose to do so if they wish.</p>
+      </div>
+      
+      <!-- Recommendations Table -->
+      <table class="recommendations-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="recommendationsTableBody">
+          <tr id="noRecommendersRow">
+            <td colspan="3" class="no-recommenders">
+              No recommenders yet
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button class="btn btn-primary" onclick="addRecommender()">
+          <span class="material-icons" style="font-size: 18px;">add</span>
+          Add Recommender
+        </button>
+        <button class="btn btn-secondary" onclick="continueApplication()">
+          Continue
+        </button>
+      </div>
+      
+      <!-- StellarRec Integration Status -->
+      <div id="stellarrecStatus" style="margin-top: 2rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; display: none;">
+        <h4 style="color: var(--brand-1); margin-bottom: 0.5rem;">
+          <span class="material-icons" style="font-size: 18px; vertical-align: middle;">link</span>
+          StellarRec Integration Active
+        </h4>
+        <p style="color: var(--muted); font-size: 0.9rem;">
+          This application is connected to StellarRec. Recommendations sent through StellarRec will automatically appear here.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- StellarRec Integration Script -->
+  <script src="stellarrec-integration.js"></script>
+  
+  <script>
+    // Application functionality
+    function addRecommender() {
+      // This would normally open a form to add a recommender manually
+      showNotification('Manual recommender addition coming soon. Use StellarRec for now!', 'info');
+    }
+    
+    function continueApplication() {
+      showNotification('Continuing to next section...', 'info');
+      // Navigate to next section
+    }
+    
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      // Hide and remove notification
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+    
+    // Check for StellarRec integration on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if we have StellarRec integration
+      if (window.StellarRecIntegration) {
+        document.getElementById('stellarrecStatus').style.display = 'block';
+        window.StellarRecIntegration.initialize();
+      }
+      
+      // Check for existing recommendations in localStorage
+      loadExistingRecommendations();
+      
+      // Listen for StellarRec messages
+      window.addEventListener('message', handleStellarRecMessage);
+    });
+    
+    function loadExistingRecommendations() {
+      const recommendations = JSON.parse(localStorage.getItem('mockUniversityRecommendations') || '[]');
+      if (recommendations.length > 0) {
+        updateRecommendationsTable(recommendations);
+      }
+    }
+    
+    function handleStellarRecMessage(event) {
+      // Handle messages from StellarRec
+      if (event.origin !== 'https://stellarrec.netlify.app') {
+        return; // Only accept messages from StellarRec
+      }
+      
+      if (event.data.type === 'RECOMMENDATION_SENT') {
+        addRecommendationFromStellarRec(event.data.recommendation);
+      }
+    }
+    
+    function addRecommendationFromStellarRec(recommendation) {
+      const recommendations = JSON.parse(localStorage.getItem('mockUniversityRecommendations') || '[]');
+      
+      // Check if recommendation already exists
+      const existingIndex = recommendations.findIndex(r => r.id === recommendation.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing recommendation
+        recommendations[existingIndex] = {
+          ...recommendations[existingIndex],
+          ...recommendation,
+          updatedAt: new Date().toISOString()
+        };
+      } else {
+        // Add new recommendation
+        recommendations.push({
+          ...recommendation,
+          receivedAt: new Date().toISOString()
+        });
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('mockUniversityRecommendations', JSON.stringify(recommendations));
+      
+      // Update the table
+      updateRecommendationsTable(recommendations);
+      
+      // Show notification
+      showNotification(`Recommendation received from ${recommendation.recommenderName}!`, 'success');
+    }
+    
+    function updateRecommendationsTable(recommendations) {
+      const tbody = document.getElementById('recommendationsTableBody');
+      const noRecommendersRow = document.getElementById('noRecommendersRow');
+      
+      if (recommendations.length === 0) {
+        noRecommendersRow.style.display = 'table-row';
+        return;
+      }
+      
+      // Hide "no recommenders" row
+      noRecommendersRow.style.display = 'none';
+      
+      // Clear existing rows (except the "no recommenders" row)
+      const existingRows = tbody.querySelectorAll('tr:not(#noRecommendersRow)');
+      existingRows.forEach(row => row.remove());
+      
+      // Add recommendation rows
+      recommendations.forEach(rec => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <div style="font-weight: 600;">${rec.recommenderName}</div>
+            <div style="font-size: 0.85rem; color: var(--muted);">${rec.recommenderEmail}</div>
+            ${rec.recommenderTitle ? `<div style="font-size: 0.85rem; color: var(--muted);">${rec.recommenderTitle}</div>` : ''}
+          </td>
+          <td>
+            <span class="status-badge status-${rec.status.toLowerCase()}">
+              ${rec.status === 'Pending' ? '⏳' : rec.status === 'Received' ? '✅' : '📤'} ${rec.status}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-secondary" onclick="viewRecommendation('${rec.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+              View Details
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    
+    function viewRecommendation(id) {
+      const recommendations = JSON.parse(localStorage.getItem('mockUniversityRecommendations') || '[]');
+      const recommendation = recommendations.find(r => r.id === id);
+      
+      if (recommendation) {
+        // Show recommendation details (you could open a modal here)
+        alert(`Recommendation from ${recommendation.recommenderName}\nStatus: ${recommendation.status}\nReceived: ${new Date(recommendation.receivedAt).toLocaleDateString()}`);
+      }
+    }
+    
+    // Expose functions globally for StellarRec integration
+    window.MockUniversityApp = {
+      addRecommendation: addRecommendationFromStellarRec,
+      updateRecommendationsTable: updateRecommendationsTable,
+      showNotification: showNotification
+    };
+  </script>
+</body>
+</html>
