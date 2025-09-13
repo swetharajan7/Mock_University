@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 Simple Function Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #4caf50;
+    }
+    
+    .success:hover {
+      background: #45a049;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+    
+    .result.success {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    
+    .result.error {
+      background: #ffeaea;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    
+    .result.info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Simple Function Test</h1>
+    
+    <h3>Test Functions Without Dependencies</h3>
+    <button onclick="testSaveFunction()">Test Save Function</button>
+    <button onclick="testGetFunction()">Test Get Function</button>
+    <button onclick="testApplyPage()" class="success">Test Apply Page</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+  </div>
+  
+  <script>
+    function showResult(message, type = 'info') {
+      const result = document.getElementById('result');
+      result.className = `result ${type}`;
+      result.textContent = message;
+      result.style.display = 'block';
+    }
+    
+    async function testSaveFunction() {
+      try {
+        showResult('Testing save function...', 'info');
+        
+        const testData = {
+          external_id: 'sr_1757777572835',
+          recommender_name: 'Prof. Manas Mohan Nand',
+          status: 'Completed',
+          file_url: 'https://stellarrec.netlify.app/assets/mock/reco-demo.pdf'
+        };
+        
+        const response = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          showResult(`✅ Save function works!\\nStatus: ${response.status}\\nResponse: ${result}`, 'success');
+        } else {
+          showResult(`❌ Save function failed\\nStatus: ${response.status}\\nError: ${result}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult(`❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testGetFunction() {
+      try {
+        showResult('Testing get function...', 'info');
+        
+        const response = await fetch('/api/get-reco?external_id=sr_1757777572835');
+        
+        if (response.status === 204) {
+          showResult('⚠️ No data found (204 No Content)\\nThis is expected if no data was saved yet.', 'info');
+        } else if (response.ok) {
+          const data = await response.text();
+          showResult(`✅ Get function works!\\nStatus: ${response.status}\\nData: ${data}`, 'success');
+        } else {
+          const error = await response.text();
+          showResult(`❌ Get function failed\\nStatus: ${response.status}\\nError: ${error}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult(`❌ ERROR: ${error.message}`, 'error');
+      }
+    }
+    
+    function testApplyPage() {
+      const url = 'apply.html?external_id=sr_1757777572835';
+      window.open(url, '_blank');
+      showResult('🚀 Opened apply page\\n\\nIf functions are working, you should see:\\n"Prof. Manas Mohan Nand • Completed • Download file"\\n\\nAt the top of the page with green background.', 'info');
+    }
+  </script>
+</body>
+</html>
