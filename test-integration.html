@@ -129,7 +129,8 @@
     <div class="test-section">
       <h3>📨 Test Recommendation Sending</h3>
       <p>Simulate sending a recommendation from StellarRec to MockUniversity:</p>
-      <button onclick="sendTestRecommendation()">Send Test Recommendation</button>
+      <button onclick="sendTestRecommendation()">Test Full Workflow (Pending → Completed)</button>
+      <button onclick="sendPendingOnly()">Send Pending Request Only</button>
       <button onclick="sendMultipleRecommendations()">Send Multiple (3)</button>
       <div id="sendResult" class="status" style="display: none;"></div>
     </div>
@@ -226,35 +227,101 @@
         return;
       }
       
-      const testRecommendation = {
-        id: 'test_' + Date.now(),
-        recommenderName: 'Dr. Sarah Johnson',
-        recommenderEmail: 'sarah.johnson@university.edu',
-        recommenderTitle: 'Professor of Computer Science',
-        studentName: 'Alex Chen',
-        studentEmail: 'alex.chen@student.edu',
-        program: 'Computer Science',
-        status: 'Received',
-        content: 'This is a test recommendation letter for Alex Chen. Alex has demonstrated exceptional skills in programming and problem-solving...',
-        submittedAt: new Date().toISOString(),
+      // First send a recommendation REQUEST (Pending status)
+      const testRequest = {
+        id: 'req_' + Date.now(),
+        recommenderName: 'Prof. Manas Mohan Nand',
+        recommenderEmail: 'manasnandmohan@gmail.com',
+        recommenderTitle: 'Professor of Historical Studies',
+        studentName: 'Student Applicant',
+        studentEmail: 'swetha.rajan103@gmail.com',
+        program: 'MA Historical Studies',
+        status: 'Pending',
+        requestedAt: new Date().toISOString(),
         source: 'StellarRec (Test)'
       };
       
-      // Simulate the message from StellarRec
-      const message = {
-        type: 'RECOMMENDATION_SENT',
-        recommendation: testRecommendation,
-        messageId: 'test_msg_' + Date.now()
+      // Simulate the REQUEST message from StellarRec
+      const requestMessage = {
+        type: 'RECOMMENDATION_REQUEST',
+        request: testRequest,
+        messageId: 'test_req_' + Date.now()
       };
       
-      // Send the message
-      window.postMessage(message, window.location.origin);
+      // Send the request message
+      window.postMessage(requestMessage, window.location.origin);
       
       result.className = 'status success';
-      result.textContent = `Test recommendation sent for ${testRecommendation.studentName}`;
+      result.textContent = `Test recommendation request sent for ${testRequest.studentName} - Status: Pending`;
       result.style.display = 'block';
       
-      log(`Sent test recommendation: ${testRecommendation.recommenderName} -> ${testRecommendation.studentName}`);
+      log(`Sent test recommendation request: ${testRequest.recommenderName} -> ${testRequest.studentName} (Status: Pending)`);
+      
+      // After 3 seconds, simulate completion
+      setTimeout(() => {
+        sendCompletedRecommendation(testRequest);
+      }, 3000);
+    }
+    
+    function sendCompletedRecommendation(originalRequest) {
+      const completedRecommendation = {
+        ...originalRequest,
+        id: originalRequest.id,
+        status: 'Completed',
+        content: 'This is a completed recommendation letter for the student. The student has demonstrated exceptional academic performance and leadership qualities...',
+        fileUrl: 'https://example.com/recommendations/sample-recommendation.pdf',
+        fileType: 'PDF',
+        completedAt: new Date().toISOString(),
+        submittedAt: new Date().toISOString()
+      };
+      
+      // Simulate the COMPLETED message from StellarRec
+      const completedMessage = {
+        type: 'RECOMMENDATION_SENT',
+        recommendation: completedRecommendation,
+        messageId: 'test_completed_' + Date.now()
+      };
+      
+      // Send the completed message
+      window.postMessage(completedMessage, window.location.origin);
+      
+      const result = document.getElementById('sendResult');
+      result.className = 'status success';
+      result.textContent = `Recommendation completed! Status: Completed, File: ${completedRecommendation.fileType}`;
+      result.style.display = 'block';
+      
+      log(`Recommendation completed: ${completedRecommendation.recommenderName} -> ${completedRecommendation.studentName} (Status: Completed, File: ${completedRecommendation.fileType})`);
+    }
+    
+    function sendPendingOnly() {
+      const result = document.getElementById('sendResult');
+      
+      const testRequest = {
+        id: 'pending_' + Date.now(),
+        recommenderName: 'Prof. Manas Mohan Nand',
+        recommenderEmail: 'manasnandmohan@gmail.com',
+        recommenderTitle: 'Professor of Historical Studies',
+        studentName: 'Student Applicant',
+        studentEmail: 'swetha.rajan103@gmail.com',
+        program: 'MA Historical Studies',
+        status: 'Pending',
+        requestedAt: new Date().toISOString(),
+        source: 'StellarRec (Test)'
+      };
+      
+      const requestMessage = {
+        type: 'RECOMMENDATION_REQUEST',
+        request: testRequest,
+        messageId: 'pending_msg_' + Date.now()
+      };
+      
+      window.postMessage(requestMessage, window.location.origin);
+      
+      result.className = 'status info';
+      result.textContent = `Pending recommendation request sent - will stay in "Pending" status`;
+      result.style.display = 'block';
+      
+      log(`Sent pending-only request: ${testRequest.recommenderName} -> ${testRequest.studentName}`);
     }
     
     function sendMultipleRecommendations() {

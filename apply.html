@@ -181,6 +181,11 @@
       color: #065f46;
     }
     
+    .status-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
     .status-submitted {
       background: #dbeafe;
       color: #1e40af;
@@ -505,13 +510,21 @@
           </td>
           <td>
             <span class="status-badge status-${rec.status.toLowerCase()}">
-              ${rec.status === 'Pending' ? '⏳' : rec.status === 'Received' ? '✅' : '📤'} ${rec.status}
+              ${rec.status === 'Pending' ? '⏳' : rec.status === 'Completed' ? '✅' : rec.status === 'Received' ? '📥' : '📤'} ${rec.status}
             </span>
           </td>
           <td>
-            <button class="btn btn-secondary" onclick="viewRecommendation('${rec.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-              View Details
-            </button>
+            ${rec.status === 'Pending' ? 
+              '<span style="color: var(--muted); font-style: italic;">Waiting for response</span>' :
+              rec.status === 'Completed' && rec.fileUrl ? 
+                `<a href="${rec.fileUrl}" class="btn btn-secondary" download style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                  <span class="material-icons" style="font-size: 16px;">download</span>
+                  Download ${rec.fileType || 'File'}
+                </a>` :
+                `<button class="btn btn-secondary" onclick="viewRecommendation('${rec.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  View Details
+                </button>`
+            }
           </td>
         `;
         tbody.appendChild(row);

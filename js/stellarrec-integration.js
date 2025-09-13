@@ -83,6 +83,10 @@
             this.log('Received message from StellarRec:', event.data);
             
             switch (event.data.type) {
+                case 'RECOMMENDATION_REQUEST':
+                    this.handleRecommendationRequest(event.data);
+                    break;
+                    
                 case 'RECOMMENDATION_SENT':
                     this.handleRecommendationSent(event.data);
                     break;
@@ -115,6 +119,24 @@
             this.sendConfirmation(data.messageId, recommendation);
             
             this.log('Processed recommendation:', recommendation);
+        }
+        
+        handleRecommendationRequest(data) {
+            // Handle when StellarRec sends a recommendation REQUEST (not the actual recommendation)
+            const request = this.processRecommendationRequest(data.request);
+            
+            // Store the request with "Pending" status
+            this.storeRecommendation(request);
+            
+            // Update UI to show pending recommendation
+            if (window.MockUniversityApp) {
+                window.MockUniversityApp.addRecommendation(request);
+            }
+            
+            // Send confirmation back to StellarRec
+            this.sendConfirmation(data.messageId, request);
+            
+            this.log('Processed recommendation request:', request);
         }
         
         handleStatusUpdate(data) {
@@ -156,9 +178,36 @@
                 submittedAt: rawRecommendation.submittedAt || new Date().toISOString(),
                 receivedAt: new Date().toISOString(),
                 source: 'StellarRec',
+                fileUrl: rawRecommendation.fileUrl || null,
+                fileType: rawRecommendation.fileType || null,
                 metadata: {
                     stellarrecId: rawRecommendation.stellarrecId,
                     originalData: rawRecommendation
+                }
+            };
+        }
+        
+        processRecommendationRequest(rawRequest) {
+            // Process recommendation REQUEST (when StellarRec sends initial request)
+            return {
+                id: rawRequest.id || this.generateId(),
+                recommenderName: rawRequest.recommenderName || rawRequest.name,
+                recommenderEmail: rawRequest.recommenderEmail || rawRequest.email,
+                recommenderTitle: rawRequest.recommenderTitle || rawRequest.title,
+                studentName: rawRequest.studentName,
+                studentEmail: rawRequest.studentEmail,
+                program: rawRequest.program,
+                status: 'Pending', // Always pending for requests
+                content: null, // No content yet
+                requestedAt: new Date().toISOString(),
+                receivedAt: null, // Will be set when actual recommendation comes
+                source: 'StellarRec',
+                fileUrl: null,
+                fileType: null,
+                metadata: {
+                    stellarrecId: rawRequest.stellarrecId,
+                    requestId: rawRequest.requestId,
+                    originalData: rawRequest
                 }
             };
         }
