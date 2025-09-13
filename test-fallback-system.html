@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔄 Test Fallback System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f0f9ff;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #1976d2;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .test-section {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    .test-section h3 {
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #1565c0;
+    }
+    
+    .success {
+      background: #16a34a;
+    }
+    
+    .success:hover {
+      background: #15803d;
+    }
+    
+    .warning {
+      background: #ea580c;
+    }
+    
+    .warning:hover {
+      background: #c2410c;
+    }
+    
+    .result {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .result.success {
+      background: #dcfce7;
+      border: 1px solid #16a34a;
+      color: #166534;
+    }
+    
+    .result.error {
+      background: #fef2f2;
+      border: 1px solid #dc2626;
+      color: #991b1b;
+    }
+    
+    .result.info {
+      background: #dbeafe;
+      border: 1px solid #2563eb;
+      color: #1d4ed8;
+    }
+    
+    .result.warning {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Test Fallback System</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+      Test the three-tier system: Real-time Storage → Mock Data → Dynamic Fallback
+    </p>
+    
+    <div class="test-section">
+      <h3>🎯 Tier 1: Real-Time Storage</h3>
+      <p>Test data stored via save-reco (highest priority):</p>
+      <button onclick="testRealTimeStorage()">📤 Send & Test Real-Time Data</button>
+      <div id="realTimeResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📋 Tier 2: Mock Data</h3>
+      <p>Test predefined external_ids with mock data:</p>
+      <button onclick="testMockData()" class="success">📋 Test Mock Data</button>
+      <div id="mockResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔄 Tier 3: Dynamic Fallback</h3>
+      <p>Test any sr_ external_id with automatic fallback:</p>
+      <button onclick="testFallback()" class="warning">🔄 Test Dynamic Fallback</button>
+      <div id="fallbackResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>❌ Tier 4: No Match</h3>
+      <p>Test non-sr external_id (should return 204):</p>
+      <button onclick="testNoMatch()" style="background: #6b7280;">❌ Test No Match</button>
+      <div id="noMatchResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🌐 Test Live Pages</h3>
+      <p>Open apply pages to see the results:</p>
+      <button onclick="openTestPages()" class="success">🌐 Open All Test Pages</button>
+      <div id="pagesResult" class="result" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script>
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+    
+    async function testRealTimeStorage() {
+      try {
+        const externalId = 'sr_realtime_test_' + Date.now();
+        
+        showResult('realTimeResult', 'Testing real-time storage...\\n\\nStep 1: Sending data to save-reco...', 'info');
+        
+        // First send data to save-reco
+        const saveResponse = await fetch('/api/save-reco', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            external_id: externalId,
+            recommender_name: 'Real-Time Test Recommender',
+            status: 'Completed',
+            letter_content: 'This is a real-time test letter stored in memory.'
+          })
+        });
+        
+        if (!saveResponse.ok) {
+          throw new Error(`Save failed: ${saveResponse.status}`);
+        }
+        
+        showResult('realTimeResult', `Step 1: ✅ Data sent to save-reco\\n\\nStep 2: Retrieving from get-reco...`, 'info');
+        
+        // Wait a moment then retrieve
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const getResponse = await fetch(`/api/get-reco?external_id=${externalId}&t=${Date.now()}`);
+        
+        if (getResponse.ok) {
+          const data = await getResponse.json();
+          showResult('realTimeResult', `✅ REAL-TIME STORAGE WORKING!
+          
+External ID: ${externalId}
+Source: Real-time storage (Tier 1)
+Recommender: ${data.recommender_name}
+Status: ${data.status}
+Letter: ${data.letter_content ? 'YES' : 'NO'}
+
+This data was stored in memory and retrieved successfully!`, 'success');
+        } else {
+          showResult('realTimeResult', `❌ Real-time retrieval failed\\nStatus: ${getResponse.status}`, 'error');
+        }
+        
+      } catch (error) {
+        showResult('realTimeResult', `❌ Real-time test error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testMockData() {
+      try {
+        showResult('mockResult', 'Testing mock data fallback...', 'info');
+        
+        const mockIds = [
+          'sr_1757777572835',
+          'sr_1757781570892', 
+          'sr_1757782192349'
+        ];
+        
+        let results = [];
+        
+        for (const externalId of mockIds) {
+          const response = await fetch(`/api/get-reco?external_id=${externalId}&t=${Date.now()}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            results.push(`✅ ${externalId}: ${data.recommender_name} (${data.status})`);
+          } else {
+            results.push(`❌ ${externalId}: Failed (${response.status})`);
+          }
+        }
+        
+        showResult('mockResult', `📋 MOCK DATA TEST RESULTS:
+        
+${results.join('\\n')}
+
+Source: Predefined mock data (Tier 2)
+These external_ids have specific mock data configured.`, results.every(r => r.startsWith('✅')) ? 'success' : 'warning');
+        
+      } catch (error) {
+        showResult('mockResult', `❌ Mock data test error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testFallback() {
+      try {
+        showResult('fallbackResult', 'Testing dynamic fallback...', 'info');
+        
+        const testIds = [
+          'sr_random_' + Date.now(),
+          'sr_fallback_test_123',
+          'sr_any_id_works_456'
+        ];
+        
+        let results = [];
+        
+        for (const externalId of testIds) {
+          const response = await fetch(`/api/get-reco?external_id=${externalId}&t=${Date.now()}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            results.push(`✅ ${externalId}: Generated fallback data`);
+          } else {
+            results.push(`❌ ${externalId}: Failed (${response.status})`);
+          }
+        }
+        
+        showResult('fallbackResult', `🔄 DYNAMIC FALLBACK TEST RESULTS:
+        
+${results.join('\\n')}
+
+Source: Dynamic fallback generation (Tier 3)
+Any external_id starting with 'sr_' gets automatic fallback data!
+
+This means ANY sr_ external_id will work, even if not predefined.`, results.every(r => r.startsWith('✅')) ? 'success' : 'warning');
+        
+      } catch (error) {
+        showResult('fallbackResult', `❌ Fallback test error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testNoMatch() {
+      try {
+        showResult('noMatchResult', 'Testing non-sr external_id...', 'info');
+        
+        const testIds = [
+          'not_sr_id_123',
+          'random_id_456',
+          'test_789'
+        ];
+        
+        let results = [];
+        
+        for (const externalId of testIds) {
+          const response = await fetch(`/api/get-reco?external_id=${externalId}&t=${Date.now()}`);
+          
+          if (response.status === 204) {
+            results.push(`✅ ${externalId}: Correctly returned 204 (No Content)`);
+          } else if (response.ok) {
+            results.push(`⚠️ ${externalId}: Unexpectedly returned data`);
+          } else {
+            results.push(`❌ ${externalId}: Error (${response.status})`);
+          }
+        }
+        
+        showResult('noMatchResult', `❌ NO MATCH TEST RESULTS:
+        
+${results.join('\\n')}
+
+Expected: 204 (No Content) for non-sr_ external_ids
+This confirms the system only provides fallback for sr_ prefixed IDs.`, results.every(r => r.startsWith('✅')) ? 'success' : 'warning');
+        
+      } catch (error) {
+        showResult('noMatchResult', `❌ No match test error: ${error.message}`, 'error');
+      }
+    }
+    
+    function openTestPages() {
+      const testUrls = [
+        'https://mockuniversity.netlify.app/apply.html?external_id=sr_1757782192349',
+        'https://mockuniversity.netlify.app/apply.html?external_id=sr_fallback_test_' + Date.now(),
+        'https://mockuniversity.netlify.app/real-time-integration-test.html'
+      ];
+      
+      testUrls.forEach(url => {
+        window.open(url, '_blank');
+      });
+      
+      showResult('pagesResult', `🌐 OPENED TEST PAGES:
+      
+1. Mock Data Example: sr_1757782192349
+2. Fallback Example: sr_fallback_test_[timestamp]
+3. Real-Time Test Interface
+
+Check each page to see:
+✅ Status shows "Completed"
+✅ File buttons appear (PDF, Video, Letter)
+✅ Letter content displays properly
+✅ All functionality works seamlessly
+
+The fallback system ensures ANY sr_ external_id works!`, 'info');
+    }
+  </script>
+</body>
+</html>

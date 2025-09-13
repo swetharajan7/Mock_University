@@ -99,7 +99,7 @@ exports.handler = async (event) => {
       has_letter: true,
       updated_at: new Date().toISOString()
     },
-    // Add the specific external_id you're testing with
+    // Add specific external_ids for testing
     'sr_1757781570892': {
       external_id: 'sr_1757781570892',
       recommender_name: 'Prof. Manas Mohan Nand',
@@ -112,13 +112,38 @@ exports.handler = async (event) => {
       has_video: true,
       has_letter: true,
       updated_at: new Date().toISOString()
+    },
+    'sr_1757782192349': {
+      external_id: 'sr_1757782192349',
+      recommender_name: 'Prof. Manas Mohan Nand',
+      recommender_email: 'manasnandmohan@gmail.com',
+      status: 'Completed',
+      pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
+      mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
+      letter_content: 'Dear Admissions Committee,\\n\\nI am writing to provide my strongest recommendation for the student applicant with reference ID sr_1757782192349.\\n\\nThis student has consistently demonstrated exceptional academic performance, innovative thinking, and strong leadership qualities throughout their studies.\\n\\nKey accomplishments include:\\n• Outstanding research contributions in their field\\n• Excellent analytical and problem-solving capabilities\\n• Strong written and oral communication skills\\n• Collaborative teamwork and mentoring abilities\\n• Dedication to academic excellence and community service\\n\\nI have also prepared comprehensive documentation including video testimonials and detailed performance evaluations that showcase their qualifications.\\n\\nI recommend this student without reservation for admission to your graduate program. They possess the intellectual rigor, research skills, and personal qualities necessary for success in advanced academic studies.\\n\\nPlease feel free to contact me if you require any additional information.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nDepartment of Computer Science\\nColumbia University\\nmanasnandmohan@gmail.com',
+      has_pdf: true,
+      has_video: true,
+      has_letter: true,
+      updated_at: new Date().toISOString()
     }
   };
   
-  // Also check for any external_id that starts with 'sr_' and provide default data
-  let data = mockData[external_id];
+  // Check mock data first
+  data = mockData[external_id];
   
+  if (data) {
+    console.log('Retrieved from mock data:', {
+      external_id,
+      recommender: data.recommender_name,
+      status: data.status,
+      source: 'mock_data'
+    });
+  }
+  
+  // If not in mock data but starts with 'sr_', provide default fallback data
   if (!data && external_id.startsWith('sr_')) {
+    console.log('Using fallback data for:', external_id);
+    
     // Provide default data for any sr_ external_id
     data = {
       external_id: external_id,
@@ -127,7 +152,7 @@ exports.handler = async (event) => {
       status: 'Completed',
       pdf_url: 'https://mockuniversity.netlify.app/assets/mock/reco-demo.pdf',
       mov_url: 'https://mockuniversity.netlify.app/assets/mock/reco-video.mov',
-      letter_content: `Dear Admissions Committee,\\n\\nI am writing to provide my recommendation for the student with reference ID ${external_id}.\\n\\nThis student has demonstrated excellent academic performance and shows great potential for success in your program.\\n\\nI recommend them for admission to your graduate program.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nColumbia University`,
+      letter_content: `Dear Admissions Committee,\\n\\nI am writing to provide my recommendation for the student with reference ID ${external_id}.\\n\\nThis student has demonstrated excellent academic performance and shows great potential for success in your program.\\n\\nKey strengths include:\\n• Outstanding analytical and problem-solving skills\\n• Excellent written and oral communication\\n• Strong research methodology and critical thinking\\n• Collaborative teamwork and leadership qualities\\n• Dedication to academic excellence\\n\\nI recommend them for admission to your graduate program.\\n\\nSincerely,\\nProf. Manas Mohan Nand\\nColumbia University`,
       has_pdf: true,
       has_video: true,
       has_letter: true,
